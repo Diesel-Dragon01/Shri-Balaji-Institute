@@ -1,0 +1,28 @@
+<nav class="navbar {{tier}}">
+  <div class="left-section">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <a href="/dashboard" class="logo-link">
+      <div class="logo">Shri Balaji Institute</div>
+    </a>
+  </div>
+
+  <div class="user-section">
+    <button id="themeToggle" class="theme-btn">🌙</button>
+
+    <a href="/profile">
+      <img src="{{profileImage}}" class="profile-img">
+    </a>
+
+    <span class="tier-badge {{tier}}">{{tier}}</span>
+
+    <a href="/profile" class="username-link">
+      <span class="username">{{username}}</span>
+    </a>
+
+    <form action="/logout" method="POST">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+</nav>
+
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>

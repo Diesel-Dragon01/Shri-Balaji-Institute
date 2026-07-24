@@ -1,0 +1,244 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+body { background: #f5f5f5; color: #111; transition: 0.3s; }
+body.dark { background: #18181b; color: white; }
+
+/*-----------Navbar-------- */
+.navbar {
+  position: fixed; top: 0; left: 0; width: 100%;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 30px; color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+.navbar.basic { background: #1e293b; }
+.navbar.premium { background: #047857; }
+.navbar.developer { background: #6d28d9; }
+.left-section { display: flex; align-items: center; gap: 15px; }
+.menu-btn { background: transparent; border: none; color: white; font-size: 28px; cursor: pointer; padding: 0; margin: 0; line-height: 1; }
+.logo-link { text-decoration: none; color: white; }
+.logo { font-size: 22px; font-weight: bold; transition: 0.3s ease; }
+.logo-link:hover .logo { color: #facc15; transform: scale(1.02); text-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
+.user-section { display: flex; align-items: center; gap: 15px; }
+.profile-img {
+  width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.5); /* faint ring at rest, not full white */
+  transition: 0.2s ease; cursor: pointer;
+}
+.profile-img:hover {
+  transform: scale(1.08);
+  border-color: #facc15;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+.username { font-weight: 600; }
+.username-link {
+  color: white;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.35); /* faint at rest */
+  text-underline-offset: 2px;
+  transition: 0.2s;
+}
+.username-link:hover {
+  text-decoration-color: white; /* brightens on hover/tap */
+  opacity: 0.85;
+}
+.logout-btn { background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+.logout-btn:hover { background: #dc2626; }
+.tier-badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+.tier-badge.basic { background: #334155; }
+.tier-badge.premium { background: #facc15; color: #000; }
+.tier-badge.developer { background: #a855f7; }
+.theme-btn {
+  width: 42px; height: 42px; border: none; background: transparent; font-size: 26px;
+  cursor: pointer; display: flex; justify-content: center; align-items: center;
+  border-radius: 50%; transition: 0.2s ease;
+}
+.theme-btn:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
+
+/*---------Overlay---------*/
+.overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35);
+  opacity: 0; visibility: hidden; transition: 0.3s; z-index: 998;
+}
+.overlay.active { opacity: 1; visibility: visible; }
+
+/*------- Sidebar----------*/
+.sidebar {
+  position: fixed; top: 75px; left: -260px; width: 260px; height: calc(100vh - 75px);
+  transition: left 0.3s ease; z-index: 999;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.sidebar-bottom { padding: 0 8px 20px; }
+.sidebar-cta {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px; border-radius: 10px;
+  font-weight: 600; font-size: 14px; text-decoration: none; color: white;
+  position: relative; overflow: hidden; cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  margin: 4px 0;
+}
+.sidebar-cta:hover { transform: translateY(-1px); }
+
+/* Upgrade button — rotating gold glow border, same motif as the premium profile card */
+.sidebar-cta.upgrade {
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+.sidebar-cta.upgrade::before {
+  content: "";
+  position: absolute; inset: 0; border-radius: 10px; padding: 1.5px;
+  background: conic-gradient(
+    from var(--border-angle),
+    #d4af37 0deg, #d4af37 300deg,
+    #fff9c4 320deg, #fffbe6 330deg, #fff9c4 340deg,
+    #d4af37 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 4px rgba(255,245,183,.6));
+  animation: spin-border 4s linear infinite;
+  pointer-events: none;
+}
+.sidebar-cta.upgrade:hover { background: rgba(250, 204, 21, 0.18); box-shadow: 0 0 18px rgba(250,204,21,.3); }
+
+/* Unsubscribe button — understated pill that fills red on hover, so it reads as a real action */
+.sidebar-cta.unsubscribe {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+}
+.sidebar-cta.unsubscribe:hover {
+  background: rgba(239,68,68,.22);
+  border-color: rgba(239,68,68,.5);
+  box-shadow: 0 0 14px rgba(239,68,68,.25);
+}
+.sidebar.basic { background: #1e293b; }
+.sidebar.premium { background: #0f766e; }
+.sidebar.developer { background: #6d28d9; }
+.sidebar.active { left: 0; }
+.sidebar-header { color: white; font-size: 18px; font-weight: bold; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar a { display: block; padding: 14px 20px; color: white; text-decoration: none; transition: 0.2s ease; border-radius: 8px; margin: 4px 8px; }
+.sidebar a:hover { background: rgba(255,255,255,0.08); transform: translateX(4px); }
+.sidebar a.active { background: rgba(255, 255, 255, 0.15); border-left: 3px solid #facc15; }
+
+/*---------- Content---------*/
+.container { padding: 90px 40px 40px; }
+.card { background: white; transition: 0.3s; }
+body.dark .card { background: #27272a; color: white; }
+
+/* Tier upgrade popup */
+.toast {
+  position: fixed; top: 15px; right: 20px; color: white; padding: 12px 20px;
+  border-radius: 8px; font-weight: 600; opacity: 0; transform: translateY(-20px);
+  transition: all 0.3s ease; z-index: 9999; background: #22c55e;
+  pointer-events: none; /* invisible while hidden — must not block clicks on the navbar behind it */
+}
+.toast.success { background: #22c55e; }
+.toast.error { background: #ef4444; }
+.toast.warning { background: #f59e0b; color: #111; }
+.toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+/*---------------- Footer ----------------*/
+.site-footer {
+  margin-top: 60px;
+  background: #111827;
+  color: white;
+  padding: 48px 30px 26px;
+  position: relative;
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #facc15, #f97316, #22c55e, #0ea5e9);
+}
+.footer-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 36px; max-width: 1100px; margin: 0 auto;
+}
+.footer-brand p { opacity: .55; max-width: 320px; }
+.footer-title {
+  font-size: 16px !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  opacity: 1 !important;
+  color: #facc15;
+  margin-bottom: 12px !important;
+}
+.footer-col h4 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: .6px;
+  opacity: .5; margin-bottom: 16px;
+}
+.footer-col p, .footer-col a {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,.75); text-decoration: none;
+  font-size: 14px; margin-bottom: 11px; line-height: 1.5;
+  transition: color .2s ease;
+}
+.footer-icon { font-size: 14px; opacity: .8; flex-shrink: 0; }
+.footer-col a {
+  position: relative; width: fit-content;
+}
+.footer-col a::after {
+  content: "";
+  position: absolute; left: 22px; bottom: -2px;
+  width: 0; height: 1px; background: #facc15;
+  transition: width .25s ease;
+}
+.footer-col a:hover { color: #facc15; }
+.footer-col a:hover::after { width: calc(100% - 22px); }
+.footer-bottom {
+  text-align: center; margin: 34px auto 0; padding-top: 22px; max-width: 1100px;
+  border-top: 1px solid rgba(255,255,255,.08); font-size: 12px; opacity: .5;
+}
+
+/* Shared "card" shell used by profile and settings pages */
+.profile-card{
+  position:relative;
+  max-width:500px;
+  margin:40px auto;
+  padding:35px;
+  border-radius:18px;
+  background:white;
+  overflow:visible;
+}
+body.dark .profile-card{ background:#27272a; }
+.profile-divider{ margin:30px 0; }
+
+/* Register the custom property so the premium glow border can be animated */
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+.profile-card.premium-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:18px;
+  padding:2px;
+  background: conic-gradient(
+    from var(--border-angle),
+    #d4af37 0deg,
+    #d4af37 300deg,
+    #fff9c4 320deg,
+    #fffbe6 330deg,
+    #fff9c4 340deg,
+    #d4af37 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 6px rgba(255,245,183,0.85));
+  animation: spin-border 4s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin-border{
+  to{ --border-angle: 360deg; }
+}

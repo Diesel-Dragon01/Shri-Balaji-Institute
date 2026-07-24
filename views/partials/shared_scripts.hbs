@@ -1,0 +1,96 @@
+<script>
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("active");
+  document.getElementById("overlay").classList.toggle("active");
+}
+
+function showToast(message, type = "success") {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.className = "toast";
+  toast.classList.add(type);
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+//dark/light theme
+const themeBtn = document.getElementById("themeToggle");
+const darkModeSwitch = document.getElementById("darkModeSwitch"); // only present on the settings page
+
+function updateThemeIcon() {
+  if (document.body.classList.contains("dark")) {
+    themeBtn.textContent = "🌙";
+  } else {
+    themeBtn.textContent = "☀️";
+  }
+}
+
+function setDarkMode(isDark) {
+  document.body.classList.toggle("dark", isDark);
+  updateThemeIcon();
+  if (darkModeSwitch) darkModeSwitch.checked = isDark;
+  saveTheme(isDark ? "dark" : "light");
+}
+
+async function saveTheme(theme) {
+  try {
+    const response = await fetch("/update-theme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme })
+    });
+    const data = await response.json();
+    if (!data.success) {
+      console.log("Theme not saved:", data.message);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+themeBtn.onclick = () => setDarkMode(!document.body.classList.contains("dark"));
+if (darkModeSwitch) {
+  darkModeSwitch.checked = document.body.classList.contains("dark");
+  darkModeSwitch.addEventListener("change", () => setDarkMode(darkModeSwitch.checked));
+}
+updateThemeIcon();
+
+const isGoogleUser = {{{isGoogleUser}}};
+
+function upgradePremium(event) {
+  event.preventDefault();
+  if (!isGoogleUser) {
+    showToast("❌ Premium upgrades are available only for Google users.", "error");
+    return;
+  }
+  window.location.href = "/upgrade";
+}
+
+async function unsubscribePremium(event) {
+  event.preventDefault();
+  if (!confirm("This will downgrade your account back to Basic. Continue?")) return;
+
+  try {
+    const response = await fetch("/unsubscribe-premium", { method: "POST" });
+    const data = await response.json();
+
+    if (data.success) {
+      showToast(data.message || "Premium subscription cancelled.", "warning");
+      setTimeout(() => window.location.reload(), 1200);
+    } else {
+      showToast(data.message || "❌ Could not cancel subscription.", "error");
+    }
+  } catch (err) {
+    console.log(err);
+    showToast("❌ Something went wrong.", "error");
+  }
+}
+
+// Footer year
+const footerBottom = document.getElementById("footerBottom");
+if (footerBottom) {
+  footerBottom.textContent = `© ${new Date().getFullYear()} Shri Balaji Institute. All rights reserved.`;
+}
+</script>

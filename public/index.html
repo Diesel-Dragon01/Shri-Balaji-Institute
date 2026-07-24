@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bozo</title>
+    
+    
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+        background: #0f172a;
+    }
+
+    @keyframes scrollBg {
+    from {
+        transform: rotate(15deg) translateX(0);
+    }
+
+    to {
+        transform: rotate(15deg) translateX(-100vw);
+    }
+}
+
+.bg-slider {
+    position: fixed;
+
+    top: -50vh;
+    left: -50vw;
+
+    width: 300vw;
+    height: 300vh;
+
+    display: flex;
+
+    animation: scrollBg 60s linear infinite;
+
+    z-index: -1;
+}
+
+.bg-slide {
+    width: 150vw;
+    height: 100%;
+
+    background: url("0014.jpg") center center / cover no-repeat;
+}
+    
+    .container {
+        width: 100%;
+        max-width: 420px;
+
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(10px);
+
+        padding: 40px;
+        border-radius: 18px;
+
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+
+        text-align: center;
+
+        position: relative;
+        z-index: 10;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        color: #0f172a;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 5px rgba(79, 70, 229, 0.3);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .login-btn:hover {
+        background: #0f172a;
+    }
+
+    .divider {
+        margin: 20px 0;
+        color: #777;
+        position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 35%;
+        height: 1px;
+        background: #ddd;
+    }
+
+    .divider::before {
+        left: 0;
+    }
+
+    .divider::after {
+        right: 0;
+    }
+
+    .google-btn {
+        display: block;
+        width: 100%;
+        text-decoration: none;
+        background: #0f172a;
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        transition: 0.3s;
+        font-weight: bold;
+    }
+
+    .google-btn:hover {
+        background: black;
+    }
+
+    .signup-text {
+        margin-top: 20px;
+        color: #555;
+    }
+
+    .signup-text a {
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .signup-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* Signup Successful notification*/
+    .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    background: #22c55e;
+    color: white;
+
+    padding: 12px 20px;
+    border-radius: 8px;
+
+    font-weight: 600;
+
+    opacity: 0;
+    transform: translateY(-20px);
+
+    transition: all 0.3s ease;
+
+    pointer-events: none;
+
+    z-index: 9999;
+}
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /*Error message upon login */
+    .error-message {
+        color: #dc2626;
+        background: #fee2e2;
+
+        border: 1px solid #fca5a5;
+
+        border-radius: 8px;
+
+        padding: 10px;
+        margin-bottom: 15px;
+
+        display: none;
+    }
+</style>
+</head>
+
+<body>
+    <div class="bg-slider">
+        <div class="bg-slide"></div>
+        <div class="bg-slide"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div class="container">
+        <h1>Welcome Back</h1>
+
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" id="username"
+                    placeholder="Enter Username" required>
+            </div>
+
+            <div class="form-group">
+                <input type="password" name="password" id="password"
+                    placeholder="Enter Password" required>
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <a href="/auth/google" class="google-btn">
+            Continue with Google
+        </a>
+
+        <div class="signup-text">
+            Don't have an account?
+            <a href="/signup">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+
+                toast.textContent = message;
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get('signup') === 'success') {
+                showToast('Account created successfully!');
+
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+            }
+
+            /*Red error code*/
+            const errorBox = document.getElementById('error-message');
+
+            if (params.get('error') === 'invalid') {
+                errorBox.textContent = '❌ Incorrect username or password';
+                errorBox.style.display = 'block';
+            }
+            
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    errorBox.style.display = 'none';
+                });
+            });
+        </script>
+
+</body>
+
+</html>

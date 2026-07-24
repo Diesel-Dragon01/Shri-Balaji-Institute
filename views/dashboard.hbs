@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<style>
+{{> base_styles }}
+
+/*Welcome Banner*/
+.welcome-banner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 34px 38px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.16);
+}
+.welcome-banner.basic { background: linear-gradient(135deg, #1e293b, #334155); }
+.welcome-banner.premium { background: linear-gradient(135deg, #047857, #059669); }
+.welcome-banner.developer { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+.welcome-banner::before, .welcome-banner::after {
+  content: ""; position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.08); pointer-events: none;
+}
+.welcome-banner::before { width: 200px; height: 200px; top: -80px; right: -50px; }
+.welcome-banner::after { width: 130px; height: 130px; bottom: -60px; right: 130px; }
+.welcome-text { position: relative; z-index: 1; }
+.welcome-greeting { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.welcome-subtitle { font-size: 14px; opacity: .85; }
+.welcome-meta {
+  position: relative; z-index: 1; text-align: right; flex-shrink: 0;
+}
+.welcome-meta .date-day { font-size: 36px; font-weight: 800; line-height: 1; }
+.welcome-meta .date-rest { font-size: 12px; opacity: .8; margin-top: 4px; }
+@media (max-width: 560px) {
+  .welcome-banner { flex-direction: column; align-items: flex-start; }
+  .welcome-meta { text-align: left; }
+}
+
+/*Page switch (dashboard <-> material browser, within this file only)*/
+.page { display: none; }
+.page.active { display: block; }
+
+/*---------------- NCERT study material ----------------*/
+.material-intro { margin-top: 34px; }
+.material-intro h3 { font-size: 19px; margin-bottom: 4px; }
+.material-intro p { opacity: .65; font-size: 14px; margin-bottom: 18px; }
+.class-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.class-card {
+  border: none; border-radius: 16px; padding: 22px; cursor: pointer;
+  color: white; text-align: left; transition: .25s ease; font-family: inherit;
+}
+.class-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.22); }
+.class-card:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+.class-card .class-num { font-size: 36px; font-weight: 800; line-height: 1; }
+.class-card .class-label { margin-top: 6px; font-size: 13px; opacity: .85; }
+
+/* Class material page */
+.material-card { max-width: 920px; text-align: left; }
+.back-btn {
+  background: transparent; border: none; cursor: pointer; font-size: 14px;
+  color: inherit; opacity: .7; margin-bottom: 14px; padding: 0;
+}
+.back-btn:hover { opacity: 1; }
+.medium-toggle {
+  display: inline-flex; border-radius: 999px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,.15); margin: 14px 0 26px;
+}
+body.dark .medium-toggle { border-color: rgba(255,255,255,.18); }
+.medium-toggle button {
+  padding: 9px 22px; border: none; background: transparent; cursor: pointer;
+  font-weight: 600; font-size: 13px; color: inherit; font-family: inherit;
+}
+.medium-toggle button.active { background: #1e293b; color: white; }
+.subject-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+.subject-card { border-radius: 14px; padding: 18px 20px; background: rgba(0,0,0,.03); }
+body.dark .subject-card { background: rgba(255,255,255,.05); }
+.subject-card h4 { font-size: 15px; margin-bottom: 6px; }
+.book-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 0; font-size: 13px; text-decoration: none; color: inherit;
+  border-top: 1px solid rgba(0,0,0,.07);
+}
+body.dark .book-link { border-top-color: rgba(255,255,255,.08); }
+.subject-card h4 + .book-link { border-top: none; }
+.book-link:hover { color: #047857; }
+body.dark .book-link:hover { color: #34d399; }
+.book-link .go { opacity: .5; font-size: 12px; white-space: nowrap; }
+.material-note { font-size: 12px; opacity: .55; margin-top: 22px; line-height: 1.5; }
+
+/*---------------- Add Lecture (developer only) ----------------*/
+.dev-panel {
+  margin-top: 34px; border-radius: 18px; padding: 26px 28px;
+  background: rgba(139,92,246,.06); border: 1px solid rgba(139,92,246,.25);
+}
+body.dark .dev-panel { background: rgba(139,92,246,.08); border-color: rgba(139,92,246,.3); }
+.dev-panel h3 {
+  font-size: 17px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.dev-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  background: #8b5cf6; color: white; padding: 3px 8px; border-radius: 999px;
+}
+.dev-panel > p { opacity: .65; font-size: 13px; margin-bottom: 18px; }
+.lecture-form {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.lecture-form .full { grid-column: 1 / -1; }
+.lecture-form label {
+  display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; opacity: .8;
+}
+.lecture-form input,
+.lecture-form select,
+.lecture-form textarea {
+  width: 100%; padding: 10px 12px; border-radius: 10px; font: inherit; font-size: 13px;
+  border: 1px solid rgba(0,0,0,.15); background: white; color: inherit;
+}
+body.dark .lecture-form input,
+body.dark .lecture-form select,
+body.dark .lecture-form textarea {
+  background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); color: white;
+}
+.lecture-form textarea { resize: vertical; min-height: 70px; }
+.lecture-form .form-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; }
+.lecture-form button {
+  border: none; border-radius: 10px; padding: 11px 22px; font: inherit; font-size: 13px;
+  font-weight: 700; cursor: pointer; background: #7c3aed; color: white; transition: .2s;
+}
+.lecture-form button:hover:not(:disabled) { background: #6d28d9; transform: translateY(-1px); }
+.lecture-form button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.dev-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+
+/* Custom dark-themed dropdown (replaces native <select> for the class picker,
+   which the browser renders with its own uncontrollable light popup styling) */
+.custom-select { position: relative; }
+.custom-select-trigger {
+  width: 100%; padding: 10px 12px; border-radius: 10px; font: inherit; font-size: 13px;
+  border: 1px solid rgba(0,0,0,.15); background: white; color: inherit;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  cursor: pointer; text-align: left;
+}
+body.dark .custom-select-trigger {
+  background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); color: white;
+}
+.custom-select-trigger:focus-visible { outline: 2px solid #7c3aed; outline-offset: 1px; }
+.custom-select-arrow { font-size: 11px; opacity: .6; transition: transform .15s ease; flex-shrink: 0; }
+.custom-select.open .custom-select-arrow { transform: rotate(180deg); }
+.custom-select-options {
+  list-style: none; margin: 0; padding: 6px; position: absolute;
+  top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+  max-height: 240px; overflow-y: auto;
+  border-radius: 10px; border: 1px solid rgba(0,0,0,.15);
+  background: #ffffff; color: #0f172a;
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  display: none;
+}
+body.dark .custom-select-options {
+  background: #1e1b2e; color: white; border-color: rgba(255,255,255,.18);
+  box-shadow: 0 14px 30px rgba(0,0,0,.4);
+}
+.custom-select.open .custom-select-options { display: block; }
+.custom-select-options li {
+  padding: 9px 10px; border-radius: 7px; font-size: 13px; cursor: pointer;
+}
+.custom-select-options li:hover,
+.custom-select-options li.active {
+  background: #7c3aed; color: white;
+}
+
+/* Add/Edit Lecture — two-column layout with live preview */
+.dev-panel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.9fr);
+  gap: 22px;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .dev-panel-grid { grid-template-columns: 1fr; }
+}
+
+.lecture-preview {
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.02);
+  overflow: hidden;
+  position: sticky;
+  top: 90px;
+}
+body.dark .lecture-preview {
+  border-color: rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+}
+.lecture-preview-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.lecture-preview-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.lecture-preview-placeholder {
+  color: rgba(255,255,255,.5);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px;
+}
+.lecture-preview-body { padding: 14px 16px; }
+.lecture-preview-meta {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.lecture-preview-tag {
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; background: rgba(124,58,237,.12); color: #7c3aed;
+}
+.lecture-preview-tier {
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; background: #fef3c7; color: #92400e;
+}
+.lecture-preview-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.3;
+}
+.lecture-preview-desc {
+  font-size: 12px; opacity: .65; line-height: 1.5;
+}
+
+/* Manage Lectures list */
+.manage-lectures { margin-top: 30px; }
+.manage-lectures-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.manage-lectures-header h4 { font-size: 14px; font-weight: 700; opacity: .85; }
+.manage-lecture-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 14px; border-radius: 10px; background: rgba(0,0,0,.03); margin-bottom: 8px;
+}
+body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
+.manage-lecture-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.manage-lecture-title { font-size: 13px; font-weight: 600; }
+.manage-lecture-sub { font-size: 11px; opacity: .55; }
+.manage-lecture-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.manage-lecture-actions button {
+  border: none; border-radius: 8px; padding: 7px 13px; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: .2s;
+}
+.manage-edit-btn { background: #1e293b; color: white; }
+.manage-edit-btn:hover { opacity: .85; }
+.manage-delete-btn { background: #ef4444; color: white; }
+.manage-delete-btn:hover { background: #dc2626; }
+.manage-lectures-empty { font-size: 13px; opacity: .55; padding: 16px 0; }
+</style>
+</head>
+<body class="{{#if (equal theme "dark")}}dark{{/if}}">
+
+{{> navbar activePage="dashboard" }}
+{{> sidebar activePage="dashboard" }}
+
+<!-- ================= Dashboard Page ================= -->
+<div id="dashboardPage" class="page active">
+  <div class="container">
+    <div class="card welcome-banner {{tier}}">
+      <div class="welcome-text">
+        <h2 class="welcome-greeting"><span id="greetingWord">Hello</span>, {{username}} 👋</h2>
+        <p class="welcome-subtitle">Hope you're having a productive day.</p>
+      </div>
+      <div class="welcome-meta" id="welcomeDate">
+        <div class="date-day"></div>
+        <div class="date-rest"></div>
+      </div>
+    </div>
+
+    {{#if (equal tier "developer")}}
+    <div class="card dev-panel">
+      <h3>🛠️ Add Lecture <span class="dev-badge">Developer</span></h3>
+      <p>Attach a YouTube video to a class and subject. Visible only to developer-tier accounts.</p>
+
+      <div id="lectureFormMessage"></div>
+
+      <div class="dev-panel-grid">
+        <form class="lecture-form" id="addLectureForm">
+          <input type="hidden" id="lecEditId" value="">
+
+          <div>
+            <label for="lecClassNum">Class <span style="color:#dc2626">*</span></label>
+            <div class="custom-select" id="classSelect">
+              <button type="button" class="custom-select-trigger" id="classSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="classSelectLabel">Select class</span>
+                <span class="custom-select-arrow">▾</span>
+              </button>
+              <ul class="custom-select-options" id="classSelectOptions" role="listbox" tabindex="-1">
+                <li role="option" data-value="1">Class 1</li>
+                <li role="option" data-value="2">Class 2</li>
+                <li role="option" data-value="3">Class 3</li>
+                <li role="option" data-value="4">Class 4</li>
+                <li role="option" data-value="5">Class 5</li>
+                <li role="option" data-value="6">Class 6</li>
+                <li role="option" data-value="7">Class 7</li>
+                <li role="option" data-value="8">Class 8</li>
+                <li role="option" data-value="9">Class 9</li>
+                <li role="option" data-value="10">Class 10</li>
+                <li role="option" data-value="11">Class 11</li>
+                <li role="option" data-value="12">Class 12</li>
+              </ul>
+            </div>
+            <input type="hidden" id="lecClassNum" name="classNum" required>
+          </div>
+
+          <div>
+            <label for="lecSubject">Subject <span style="color:#dc2626">*</span></label>
+            <input id="lecSubject" name="subject" type="text" placeholder="Mathematics" required>
+          </div>
+
+          <div class="full">
+            <label for="lecTitle">Lecture Title <span style="color:#dc2626">*</span></label>
+            <input id="lecTitle" name="title" type="text" placeholder="Introduction to Quadratic Equations" required>
+          </div>
+
+          <div class="full">
+            <label for="lecYoutubeUrl">YouTube Link or Video ID <span style="color:#dc2626">*</span></label>
+            <input id="lecYoutubeUrl" name="youtubeUrl" type="text" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" required>
+            <div class="dev-hint" id="videoIdHint">Paste a full YouTube URL (watch, youtu.be, embed, shorts) or a raw video ID.</div>
+          </div>
+
+          <div>
+            <label for="lecOrder">Sort Order</label>
+            <input id="lecOrder" name="order" type="number" value="0">
+          </div>
+
+          <div>
+            <label for="lecTier">Access Tier <span style="color:#dc2626">*</span></label>
+            <select id="lecTier" name="tier">
+              <option value="basic">Basic</option>
+              <option value="premium" selected>Premium</option>
+              <option value="developer">Developer</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="lecDescription">Description</label>
+            <textarea id="lecDescription" name="description" maxlength="500" placeholder="A short summary of what this lecture covers..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="lecCancelEditBtn" style="display:none; background:transparent; color:inherit; border:1px solid rgba(0,0,0,.15);">Cancel Edit</button>
+            <button type="submit" id="lecSubmitBtn">Add Lecture</button>
+          </div>
+        </form>
+
+        <div class="lecture-preview">
+          <div class="lecture-preview-thumb" id="previewThumbWrap">
+            <div class="lecture-preview-placeholder" id="previewPlaceholder">Thumbnail preview</div>
+          </div>
+          <div class="lecture-preview-body">
+            <div class="lecture-preview-meta">
+              <span class="lecture-preview-tag" id="previewClassSubject">Subject · Class</span>
+              <span class="lecture-preview-tier" id="previewTier">premium</span>
+            </div>
+            <div class="lecture-preview-title" id="previewTitle">Lecture Title</div>
+            <div class="lecture-preview-desc" id="previewDesc">The lecture description will appear here.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="manage-lectures">
+        <div class="manage-lectures-header">
+          <h4>📋 Manage Lectures</h4>
+          <div class="custom-select" id="manageClassSelect" style="max-width:180px;">
+            <button type="button" class="custom-select-trigger" id="manageClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+              <span id="manageClassSelectLabel">Select class</span>
+              <span class="custom-select-arrow">▾</span>
+            </button>
+            <ul class="custom-select-options" id="manageClassSelectOptions" role="listbox" tabindex="-1">
+              <li role="option" data-value="1">Class 1</li>
+              <li role="option" data-value="2">Class 2</li>
+              <li role="option" data-value="3">Class 3</li>
+              <li role="option" data-value="4">Class 4</li>
+              <li role="option" data-value="5">Class 5</li>
+              <li role="option" data-value="6">Class 6</li>
+              <li role="option" data-value="7">Class 7</li>
+              <li role="option" data-value="8">Class 8</li>
+              <li role="option" data-value="9">Class 9</li>
+              <li role="option" data-value="10">Class 10</li>
+              <li role="option" data-value="11">Class 11</li>
+              <li role="option" data-value="12">Class 12</li>
+            </ul>
+          </div>
+        </div>
+        <div id="manageLecturesList">
+          <p class="manage-lectures-empty">Select a class above to see its lectures.</p>
+        </div>
+      </div>
+    </div>
+    {{/if}}
+
+    <div class="material-intro">
+      <h3>📘 NCERT Study Material</h3>
+      <p>Pick a class to browse subjects by medium and open the official NCERT textbook PDFs.</p>
+        <div class="class-grid">
+            <button class="class-card" style="background:linear-gradient(135deg,#be185d,#ec4899);" onclick="openClassMaterial(1)">
+                <div class="class-num">1</div>
+                <div class="class-label">Class 1</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);" onclick="openClassMaterial(2)">
+                <div class="class-num">2</div>
+                <div class="class-label">Class 2</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#15803d,#22c55e);" onclick="openClassMaterial(3)">
+                <div class="class-num">3</div>
+                <div class="class-label">Class 3</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#a16207,#eab308);" onclick="openClassMaterial(4)">
+                <div class="class-num">4</div>
+                <div class="class-label">Class 4</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#c2410c,#f97316);" onclick="openClassMaterial(5)">
+                <div class="class-num">5</div>
+                <div class="class-label">Class 5</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#7e22ce,#a855f7);" onclick="openClassMaterial(6)">
+                <div class="class-num">6</div>
+                <div class="class-label">Class 6</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#0f766e,#14b8a6);" onclick="openClassMaterial(7)">
+                <div class="class-num">7</div>
+                <div class="class-label">Class 7</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#b91c1c,#ef4444);" onclick="openClassMaterial(8)">
+                <div class="class-num">8</div>
+                <div class="class-label">Class 8</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#1e293b,#334155);" onclick="openClassMaterial(9)">
+                <div class="class-num">9</div>
+                <div class="class-label">Class 9</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#047857,#059669);" onclick="openClassMaterial(10)">
+                <div class="class-num">10</div>
+                <div class="class-label">Class 10</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);" onclick="openClassMaterial(11)">
+                <div class="class-num">11</div>
+                <div class="class-label">Class 11</div>
+            </button>
+            <button class="class-card" style="background:linear-gradient(135deg,#b45309,#d97706);" onclick="openClassMaterial(12)">
+                <div class="class-num">12</div>
+                <div class="class-label">Class 12</div>
+            </button>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Class Material Page ================= -->
+<div id="materialPage" class="page">
+  <div class="container">
+    <div class="profile-card material-card {{#if (equal tier "premium")}}premium-card{{/if}}">
+      <button class="back-btn" onclick="navigate('dashboardPage')">← Back to Dashboard</button>
+      <h2 id="materialTitle">Class 9 – NCERT Books</h2>
+
+      <div class="medium-toggle" id="mediumToggle">
+        <button data-medium="english" class="active" onclick="setMedium('english')">English Medium</button>
+        <button data-medium="hindi" onclick="setMedium('hindi')">Hindi Medium</button>
+      </div>
+
+      <div class="subject-grid" id="subjectGrid"></div>
+
+      <p class="material-note">PDFs open directly from the official NCERT textbook portal (ncert.nic.in). Some subjects only have one edition, so the medium toggle won't change those links.</p>
+    </div>
+  </div>
+</div>
+
+{{> footer }}
+
+{{> shared_scripts }}
+
+<script>
+// Toggle between the dashboard view and the class-material view (both live in this file)
+function navigate(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const target = document.getElementById(page);
+  if (target) target.classList.add("active");
+  document.getElementById("sidebar").classList.remove("active");
+  document.getElementById("overlay").classList.remove("active");
+}
+
+// Welcome banner — actual time-of-day greeting + today's date (was hardcoded "Good Evening" before)
+(function updateWelcomeBanner() {
+  const now = new Date();
+  const hour = now.getHours();
+
+  let greeting = "Good Evening";
+  if (hour < 5) greeting = "Good Night";
+  else if (hour < 12) greeting = "Good Morning";
+  else if (hour < 17) greeting = "Good Afternoon";
+  else if (hour < 21) greeting = "Good Evening";
+  else greeting = "Good Night";
+
+  const greetingEl = document.getElementById("greetingWord");
+  if (greetingEl) greetingEl.textContent = greeting;
+
+  const dateEl = document.getElementById("welcomeDate");
+  if (dateEl) {
+    dateEl.querySelector(".date-day").textContent = now.toLocaleDateString("en-IN", { day: "numeric" });
+    dateEl.querySelector(".date-rest").textContent = now.toLocaleDateString("en-IN", { weekday: "long", month: "long" });
+  }
+})();
+
+const params = new URLSearchParams(window.location.search);
+if (params.get("premium") === "success") {
+  showToast("🎉 Premium membership activated!");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+if (params.get("premium") === "cancelled") {
+  showToast("👋 You've unsubscribed from Premium.", "warning");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+if (params.get("courses") === "google-required") {
+  showToast("❌ Please log in with Google to access courses.", "error");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+if (params.get("courses") === "upgrade-required") {
+  showToast("💎 Upgrade to Premium to access courses.", "warning");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// ---- Add/Edit Lecture (developer only) ----
+// Pulls the 11-char YouTube video ID out of any common URL shape, or accepts a raw ID.
+function extractVideoId(input) {
+  const value = (input || "").trim();
+  if (!value) return "";
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(value)) return value;
+
+  try {
+    const url = new URL(value);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.slice(1).split("/")[0];
+    }
+    if (url.hostname.includes("youtube.com")) {
+      if (url.pathname === "/watch") return url.searchParams.get("v") || "";
+      if (url.pathname.startsWith("/embed/")) return url.pathname.split("/embed/")[1]?.split("/")[0] || "";
+      if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/shorts/")[1]?.split("/")[0] || "";
+    }
+  } catch {
+    // not a valid URL
+  }
+  return "";
+}
+
+const lectureForm = document.getElementById("addLectureForm");
+if (lectureForm) {
+  const youtubeInput = document.getElementById("lecYoutubeUrl");
+  const videoIdHint = document.getElementById("videoIdHint");
+  const editIdInput = document.getElementById("lecEditId");
+  const submitBtn = document.getElementById("lecSubmitBtn");
+  const cancelEditBtn = document.getElementById("lecCancelEditBtn");
+
+  // ---- Custom class dropdown (Add/Edit form) ----
+  const classSelect = document.getElementById("classSelect");
+  const classSelectTrigger = document.getElementById("classSelectTrigger");
+  const classSelectLabel = document.getElementById("classSelectLabel");
+  const classSelectOptions = document.getElementById("classSelectOptions");
+  const lecClassNumInput = document.getElementById("lecClassNum");
+
+  function closeClassSelect() {
+    classSelect.classList.remove("open");
+    classSelectTrigger.setAttribute("aria-expanded", "false");
+  }
+  function openClassSelect() {
+    classSelect.classList.add("open");
+    classSelectTrigger.setAttribute("aria-expanded", "true");
+  }
+  classSelectTrigger.addEventListener("click", () => {
+    classSelect.classList.contains("open") ? closeClassSelect() : openClassSelect();
+  });
+  classSelectOptions.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", () => {
+      lecClassNumInput.value = option.dataset.value;
+      classSelectLabel.textContent = option.textContent;
+      classSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      option.classList.add("active");
+      closeClassSelect();
+      updatePreview();
+    });
+  });
+
+  function resetClassSelect() {
+    lecClassNumInput.value = "";
+    classSelectLabel.textContent = "Select class";
+    classSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+    closeClassSelect();
+  }
+
+  function setClassSelectValue(classNum) {
+    lecClassNumInput.value = classNum;
+    const match = [...classSelectOptions.querySelectorAll("li")].find(li => li.dataset.value == classNum);
+    classSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+    if (match) {
+      classSelectLabel.textContent = match.textContent;
+      match.classList.add("active");
+    }
+  }
+
+  // ---- Custom class dropdown (Manage list filter) ----
+  const manageClassSelect = document.getElementById("manageClassSelect");
+  const manageClassSelectTrigger = document.getElementById("manageClassSelectTrigger");
+  const manageClassSelectLabel = document.getElementById("manageClassSelectLabel");
+  const manageClassSelectOptions = document.getElementById("manageClassSelectOptions");
+
+  function closeManageClassSelect() {
+    manageClassSelect.classList.remove("open");
+    manageClassSelectTrigger.setAttribute("aria-expanded", "false");
+  }
+  manageClassSelectTrigger.addEventListener("click", () => {
+    if (manageClassSelect.classList.contains("open")) {
+      closeManageClassSelect();
+    } else {
+      manageClassSelect.classList.add("open");
+      manageClassSelectTrigger.setAttribute("aria-expanded", "true");
+    }
+  });
+  manageClassSelectOptions.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", () => {
+      manageClassSelectLabel.textContent = option.textContent;
+      manageClassSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      option.classList.add("active");
+      closeManageClassSelect();
+      loadManageLectures(Number(option.dataset.value));
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!classSelect.contains(e.target)) closeClassSelect();
+    if (!manageClassSelect.contains(e.target)) closeManageClassSelect();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeClassSelect(); closeManageClassSelect(); }
+  });
+
+  // ---- Live preview ----
+  const previewThumbWrap = document.getElementById("previewThumbWrap");
+  const previewClassSubject = document.getElementById("previewClassSubject");
+  const previewTier = document.getElementById("previewTier");
+  const previewTitle = document.getElementById("previewTitle");
+  const previewDesc = document.getElementById("previewDesc");
+
+  function updatePreview() {
+    const classNum = document.getElementById("lecClassNum").value;
+    const subject = document.getElementById("lecSubject").value.trim();
+    const title = document.getElementById("lecTitle").value.trim();
+    const description = document.getElementById("lecDescription").value.trim();
+    const tier = document.getElementById("lecTier").value;
+    const videoId = extractVideoId(youtubeInput.value);
+
+    previewClassSubject.textContent = `${subject || "Subject"}${classNum ? " · Class " + classNum : ""}`;
+    previewTier.textContent = tier;
+    previewTitle.textContent = title || "Lecture Title";
+    previewDesc.textContent = description || "The lecture description will appear here.";
+
+    if (videoId) {
+      previewThumbWrap.innerHTML = `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${title || 'Lecture thumbnail'}" onerror="this.parentElement.innerHTML='<div class=\\'lecture-preview-placeholder\\'>Unable to load thumbnail</div>'">`;
+    } else {
+      previewThumbWrap.innerHTML = `<div class="lecture-preview-placeholder">Thumbnail preview</div>`;
+    }
+  }
+
+  ["lecSubject", "lecTitle", "lecDescription", "lecTier"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updatePreview);
+  });
+
+  youtubeInput.addEventListener("input", () => {
+    const id = extractVideoId(youtubeInput.value);
+    videoIdHint.textContent = id
+      ? `Detected video ID: ${id}`
+      : "Paste a full YouTube URL (watch, youtu.be, embed, shorts) or a raw video ID.";
+    updatePreview();
+  });
+
+  // ---- Edit mode ----
+  function enterEditMode(lecture) {
+    editIdInput.value = lecture._id;
+    setClassSelectValue(lecture.classNum);
+    document.getElementById("lecSubject").value = lecture.subject || "";
+    document.getElementById("lecTitle").value = lecture.title || "";
+    document.getElementById("lecDescription").value = lecture.description || "";
+    document.getElementById("lecOrder").value = lecture.order || 0;
+    document.getElementById("lecTier").value = lecture.tier || "premium";
+    youtubeInput.value = lecture.videoId || "";
+    videoIdHint.textContent = `Detected video ID: ${lecture.videoId}`;
+
+    submitBtn.textContent = "Update Lecture";
+    cancelEditBtn.style.display = "inline-block";
+    updatePreview();
+
+    document.getElementById("addLectureForm").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function exitEditMode() {
+    editIdInput.value = "";
+    lectureForm.reset();
+    resetClassSelect();
+    document.getElementById("lecTier").value = "premium";
+    document.getElementById("lecOrder").value = 0;
+    videoIdHint.textContent = "Paste a full YouTube URL (watch, youtu.be, embed, shorts) or a raw video ID.";
+    submitBtn.textContent = "Add Lecture";
+    cancelEditBtn.style.display = "none";
+    updatePreview();
+  }
+
+  cancelEditBtn.addEventListener("click", exitEditMode);
+
+  // ---- Submit (create or update) ----
+  lectureForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const videoId = extractVideoId(youtubeInput.value);
+
+    if (!videoId) {
+      showToast("❌ Couldn't find a video ID in that link.", "error");
+      return;
+    }
+
+    const payload = {
+      classNum: Number(document.getElementById("lecClassNum").value),
+      subject: document.getElementById("lecSubject").value.trim(),
+      title: document.getElementById("lecTitle").value.trim(),
+      description: document.getElementById("lecDescription").value.trim(),
+      videoId,
+      order: Number(document.getElementById("lecOrder").value) || 0,
+      tier: document.getElementById("lecTier").value
+    };
+
+    if (!payload.classNum || !payload.subject || !payload.title) {
+      showToast("❌ Please fill in class, subject, and title.", "error");
+      return;
+    }
+
+    const editId = editIdInput.value;
+    const isEditing = !!editId;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = isEditing ? "Updating..." : "Adding...";
+
+    try {
+      const res = await fetch(isEditing ? `/api/lectures/${editId}` : "/api/lectures", {
+        method: isEditing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || (isEditing ? "✅ Lecture updated!" : "✅ Lecture added!"));
+        exitEditMode();
+
+        // Refresh the manage list if it's currently showing this class
+        const activeManageOption = manageClassSelectOptions.querySelector("li.active");
+        if (activeManageOption && Number(activeManageOption.dataset.value) === payload.classNum) {
+          loadManageLectures(payload.classNum);
+        }
+      } else {
+        showToast(data.message || "❌ Failed to save lecture.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Something went wrong.", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isEditing ? "Update Lecture" : "Add Lecture";
+    }
+  });
+
+  // ---- Manage Lectures list ----
+  async function loadManageLectures(classNum) {
+    const list = document.getElementById("manageLecturesList");
+    list.innerHTML = `<p class="manage-lectures-empty">Loading…</p>`;
+
+    try {
+      const res = await fetch(`/api/lectures/${classNum}`);
+      const data = await res.json();
+
+      if (!data.success) {
+        list.innerHTML = `<p class="manage-lectures-empty">${data.message || "Could not load lectures."}</p>`;
+        return;
+      }
+
+      const allLectures = Object.values(data.lectures).flat();
+
+      if (allLectures.length === 0) {
+        list.innerHTML = `<p class="manage-lectures-empty">No lectures for this class yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      allLectures.forEach(lecture => {
+        const row = document.createElement("div");
+        row.className = "manage-lecture-row";
+        row.innerHTML = `
+          <div class="manage-lecture-info">
+            <div class="manage-lecture-title">${lecture.title}</div>
+            <div class="manage-lecture-sub">${lecture.subject} · ${lecture.tier}</div>
+          </div>
+          <div class="manage-lecture-actions">
+            <button class="manage-edit-btn" type="button">Edit</button>
+            <button class="manage-delete-btn" type="button">Delete</button>
+          </div>
+        `;
+        row.querySelector(".manage-edit-btn").addEventListener("click", () => enterEditMode(lecture));
+        row.querySelector(".manage-delete-btn").addEventListener("click", () => deleteLecture(lecture._id, classNum));
+        list.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = `<p class="manage-lectures-empty">Something went wrong loading lectures.</p>`;
+    }
+  }
+
+  async function deleteLecture(id, classNum) {
+    if (!confirm("Delete this lecture? This can't be undone.")) return;
+
+    try {
+      const res = await fetch(`/api/lectures/${id}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || "🗑️ Lecture deleted.");
+        loadManageLectures(classNum);
+        if (editIdInput.value === id) exitEditMode();
+      } else {
+        showToast(data.message || "❌ Failed to delete lecture.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Something went wrong.", "error");
+    }
+  }
+
+  updatePreview();
+}
+
+// ---- NCERT study material ----
+// Each book: { name, en, hi? } — en/hi are official ncert.nic.in textbook.php links.
+// Subjects flagged with a single link (no hi) are shown as-is regardless of medium
+// (this covers the English/Hindi language books themselves, which only have one edition).
+const NCERT_BASE = "https://ncert.nic.in/textbook.php?";
+const NCERT_DATA = {
+  1: {
+    label: "Class 1",
+    subjects: [
+      { name: "English", books: [{ name: "Mridang", en: NCERT_BASE + "aemr1=0-9" }] },
+      { name: "Hindi", books: [{ name: "Sarangi", en: NCERT_BASE + "ahsr1=0-19" }] },
+      { name: "Mathematics", books: [{ name: "Joyful-Mathematics", en: NCERT_BASE + "aejm1=0-13", hi: NCERT_BASE + "ahjm1=0-13"}] },
+      { name: "Urdu", books: [{ name: "Shahnai", en: NCERT_BASE + "aush1=0-18" }] },
+    ]
+  },
+  2: {
+    label: "Class 2",
+    subjects: [
+      { name: "English", books: [{ name: "Mridang", en: NCERT_BASE + "bemr1=0-13" }] },
+      { name: "Hindi", books: [{ name: "Sarangi", en: NCERT_BASE + "bhsr1=0-26" }] },
+      { name: "Mathematics", books: [{ name: "Joyful-Mathematics", en: NCERT_BASE + "bejm1=0-11", hi: NCERT_BASE + "bhjm1=0-11"}] },
+      { name: "Urdu", books: [{ name: "Shahnai", en: NCERT_BASE + "bush1=0-19" }] },
+    ]
+  },
+  3: {
+    label: "Class 3",
+    subjects: [
+      { name: "English", books: [{ name: "Santoor", en: NCERT_BASE + "cesa1=0-12" }] },
+      { name: "Hindi", books: [{ name: "Veena", en: NCERT_BASE + "chve1=0-18" }] },
+      { name: "Mathematics", books: [{ name: "Maths Mela", en: NCERT_BASE + "cemm1=0-14", hi: NCERT_BASE + "chmm1=0-14"}] },
+      { name: "The World Around Us", books: [{ name: "Our Wonderous World", en: NCERT_BASE + "ceev1=0-12", hi: NCERT_BASE + "chev1=0-12"}] },
+      { name: "Art", books: [{ name: "Bansuri-1", en: NCERT_BASE + "cebu1=0-20", hi: NCERT_BASE + "chbu1=0-20"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yoga", en: NCERT_BASE + "ceky1=0-7", hi: NCERT_BASE + "chky1=0-7"}] },
+      { name: "Urdu", books: [{ name: "Sitar", en: NCERT_BASE + "cust1=0-19" }] },
+    ]
+  },
+  4: {
+    label: "Class 4",
+    subjects: [
+      { name: "English", books: [{ name: "Santoor", en: NCERT_BASE + "desa1=0-12" }] },
+      { name: "Hindi", books: [{ name: "Veena", en: NCERT_BASE + "dhve1=0-13" }] },
+      { name: "Mathematics", books: [{ name: "Maths Mela", en: NCERT_BASE + "demm1=0-14", hi: NCERT_BASE + "dhmm1=0-14"}] },
+      { name: "The World Around Us", books: [{ name: "Our Wonderous World", en: NCERT_BASE + "deev1=0-10", hi: NCERT_BASE + "dhev1=0-10"}] },
+      { name: "Art", books: [{ name: "Bansuri-1", en: NCERT_BASE + "debu1=0-18", hi: NCERT_BASE + "dhbu1=0-18"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yoga", en: NCERT_BASE + "deky1=0-3", hi: NCERT_BASE + "dhky1=0-3"}] },
+      { name: "Urdu", books: [{ name: "Sitar", en: NCERT_BASE + "dust1=0-14" }] },
+    ]
+  },
+  5: {
+    label: "Class 5",
+    subjects: [
+      { name: "English", books: [{ name: "Santoor", en: NCERT_BASE + "eesa1=0-10" }] },
+      { name: "Hindi", books: [{ name: "Veena", en: NCERT_BASE + "ehve1=0-12" }] },
+      { name: "Mathematics", books: [{ name: "Maths Mela", en: NCERT_BASE + "eemm1=0-15", hi: NCERT_BASE + "ehmm1=0-15"}] },
+      { name: "The World Around Us", books: [{ name: "Our Wonderous World", en: NCERT_BASE + "eeev1=0-10", hi: NCERT_BASE + "ehev1=0-10"}] },
+      { name: "Art", books: [{ name: "Bansuri-1", en: NCERT_BASE + "eebu1=0-19", hi: NCERT_BASE + "ehbu1=0-19"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yoga", en: NCERT_BASE + "eeky1=0-3", hi: NCERT_BASE + "ehky1=0-3"}] },
+      { name: "Urdu", books: [{ name: "Sitar", en: NCERT_BASE + "eust1=0-14" }] },
+    ]
+  },
+  6: {
+    label: "Class 6",
+    subjects: [
+      { name: "English", books: [{ name: "Poorvi", en: NCERT_BASE + "fepr1=0-5" }] },
+      { name: "Hindi", books: [{ name: "Malhar", en: NCERT_BASE + "fhml1=0-13" }] },
+      { name: "Mathematics", books: [{ name: "Ganita Prakash", en: NCERT_BASE + "fegp1=0-10", hi: NCERT_BASE + "fhgp1=0-10"}] },
+      { name: "Science", books: [{ name: "Curiosity", en: NCERT_BASE + "fecu1=0-12", hi: NCERT_BASE + "fhcu1=0-12"}] },
+      { name: "Social Science", books: [{ name: "Exploring Society India and Beyond", en: NCERT_BASE + "fees1=0-14", hi: NCERT_BASE + "fhes1=0-14"}] },
+      { name: "Sanskrit", books: [{ name: "Deepakam", en: NCERT_BASE + "fegp1=0-10"}] },
+      { name: "Art", books: [{ name: "Kriti-1", en: NCERT_BASE + "fekr1=0-22", hi: NCERT_BASE + "fhkr1=0-22"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yatra", en: NCERT_BASE + "feky1=1-5", hi: NCERT_BASE + "fhky1=1-5"}] },
+      { name: "Vocational Education", books: [{ name: "Kaushal Bodh", en: NCERT_BASE + "fekb1=0-6", hi: NCERT_BASE + "fhkb1=0-6"}] },
+      { name: "Urdu", books: [{ name: "Khayal", en: NCERT_BASE + "eust1=0-18" }] },
+    ]
+  },
+  7: {
+    label: "Class 7",
+    subjects: [
+      { name: "English", books: [{ name: "Poorvi", en: NCERT_BASE + "gepr1=0-5" }] },
+      { name: "Hindi", books: [{ name: "Malhar", en: NCERT_BASE + "ghml1=0-10" }] },
+      { name: "Mathematics", books: [{ name: "Ganita Prakash", en: NCERT_BASE + "gegp1=0-8", hi: NCERT_BASE + "ghgp1=0-8"}] },
+      { name: "Science", books: [{ name: "Curiosity", en: NCERT_BASE + "gecu1=0-12", hi: NCERT_BASE + "gecu1=0-12"}] },
+      { name: "Social Science", books: [{ name: "Exploring Society India and Beyond", en: NCERT_BASE + "gees1=0-12", hi: NCERT_BASE + "ghes1=0-12"}] },
+      { name: "Sanskrit", books: [{ name: "Deepakam", en: NCERT_BASE + "gsde1=0-15", hi: NCERT_BASE + "fsde1=0-16"}] },
+      { name: "Art", books: [{ name: "Kriti-1", en: NCERT_BASE + "gekr1=0-20", hi: NCERT_BASE + "ghkr1=0-20"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yatra", en: NCERT_BASE + "geky1=0-6", hi: NCERT_BASE + "ghky1=0-6"}] },
+      { name: "Vocational Education", books: [{ name: "Kaushal Bodh", en: NCERT_BASE + "gekb1=0-7", hi: NCERT_BASE + "ghkb1=0-7"}] },
+      { name: "Urdu", books: [{ name: "Khayal", en: NCERT_BASE + "guky1=0-14" }] },
+    ]
+  },
+  8: {
+    label: "Class 8",
+    subjects: [
+      { name: "English", books: [{ name: "Poorvi", en: NCERT_BASE + "hepr1=0-5" }] },
+      { name: "Hindi", books: [{ name: "Malhar", en: NCERT_BASE + "hhml1=0-10" }] },
+      { name: "Mathematics", books: [{ name: "Ganita Prakash Part-1", en: NCERT_BASE + "hegp1=0-7", hi: NCERT_BASE + "hhgp1=0-7"}] },
+      { name: "Mathematics", books: [{ name: "Ganita Prakash Part-2", en: NCERT_BASE + "hegp2=0-7", hi: NCERT_BASE + "hhgp1=0-7"}] },
+      { name: "Science", books: [{ name: "Curiosity", en: NCERT_BASE + "hecu1=0-13", hi: NCERT_BASE + "hhcu1=0-13"}] },
+      { name: "Social Science", books: [{ name: "Exploring Society India and Beyond", en: NCERT_BASE + "hees1=0-7", hi: NCERT_BASE + "hhes1=0-7"}] },
+      { name: "Sanskrit", books: [{ name: "Deepakam", en: NCERT_BASE + "hsde1=0-16", hi: NCERT_BASE + "fsde1=0-16"}] },
+      { name: "Art", books: [{ name: "Kriti-1", en: NCERT_BASE + "hekr1=0-19", hi: NCERT_BASE + "hhkr1=0-19"}] },
+      { name: "Physical Education", books: [{ name: "Khel Yatra", en: NCERT_BASE + "heky1=0-6", hi: NCERT_BASE + "hhky1=0-6"}] },
+      { name: "Vocational Education", books: [{ name: "Kaushal Bodh", en: NCERT_BASE + "hekb1=0-7", hi: NCERT_BASE + "hhkb1=0-7"}] },
+      { name: "Urdu", books: [{ name: "Khayal", en: NCERT_BASE + "huky1=0-21" }] },
+    ]
+  },
+  9: {
+    label: "Class 9",
+    subjects: [
+      { name: "English", books: [{ name: "Kaveri (Course Book)", en: NCERT_BASE + "iebe1=0-8" }] },
+      { name: "Hindi", books: [{ name: "Ganga", en: NCERT_BASE + "ihga1=0-12" }] },
+      { name: "Mathematics", books: [{ name: "Ganita Manjari", en: NCERT_BASE + "iemh1=0-15", hi: NCERT_BASE + "ihmh1=0-8"}] },
+      { name: "Science", books: [{ name: "Exploration", en: NCERT_BASE + "iesc1=0-15" }] },
+      { name: "Social Science", books: [{ name: "Understanding Society India and Beyond", en: NCERT_BASE + "iest1=0-9" }] },
+      { name: "Sanskrit", books: [{ name: "Sharada", en: NCERT_BASE + "ihsh1=0-16" }] },
+      { name: "Art", books: [{ name: "Madhurima", en: NCERT_BASE + "iemr1=0-17" }] },
+      { name: "Urdu", books: [{ name: "Jamuna", en: NCERT_BASE + "iuju1=0-15" }] },
+      { name: "Physical Training and Well Being", books: [{ name: "Khel Praveen", en: NCERT_BASE + "iehp1=0-6" }] },
+      { name: "Skill Education", books: [{ name: "Kaushal Vikas", en: NCERT_BASE + "iekv1=0-12" }] }
+    ]
+  },
+  10: {
+    label: "Class 10",
+    subjects: [
+      { name: "English", books: [{ name: "First Flight (Course Book)", en: NCERT_BASE + "jeff1=0-11" },
+                                 { name: "Footprints without feet", en: NCERT_BASE + "jefp1=0-9" },
+                                 { name: "Words and Expressions 2", en: NCERT_BASE + "jewe2=0-9" }] },
+      { name: "Hindi", books: [{ name: "Kshitij-2", en: NCERT_BASE + "jhks1=0-12" },
+                               { name: "Sparsh", en: NCERT_BASE + "jhsp1=0-14" },
+                               { name: "Sanchayan", en: NCERT_BASE + "jhsy1=0-3" },
+                               { name: "Kritika", en: NCERT_BASE + "jhkr1=0-3" }] },
+      { name: "Mathematics", books: [{ name: "Mathematics", en: NCERT_BASE + "jemh1=0-14",hi:NCERT_BASE+"jhmh1=0-14"}] },
+      { name: "Science", books: [{ name: "Science", en: NCERT_BASE + "jesc1=0-16", hi: NCERT_BASE + "jhsc1=0-16" }]},
+      { name: "Social Science", books: [
+        { name: "History – India & the Contemporary World II", en: NCERT_BASE + "jess3=0-5", hi: NCERT_BASE + "jhss3=0-5" },
+        { name: "Geography – Contemporary India II", en: NCERT_BASE + "jess1=0-7", hi: NCERT_BASE + "jhss1=0-7" },
+        { name: "Civics – Democratic Politics II", en: NCERT_BASE + "jess4=0-8", hi: NCERT_BASE + "jhss4=0-8" },
+        { name: "Economics – Understanding Economic Development", en: NCERT_BASE + "jess2=0-5", hi: NCERT_BASE + "jhss2=0-5" }
+      ]},
+      { name: "Sanskrit", books: [
+        { name: "Shemushi", en: NCERT_BASE + "jhsk1=0-10"},
+        { name: "Vyakaranavithi", en: NCERT_BASE + "jhva1=0-12"},
+        { name: "Abhyaswan Bhav-2", en: NCERT_BASE + "jsab1=0-14"},
+      ]},
+      { name: "Urdu", books: [
+        { name: "Gulzar e Urdu", en: NCERT_BASE + "juge1=0-12"},
+        { name: "Nawa e Urdu", en: NCERT_BASE + "june1=0-14"},
+        { name: "Jaan Pahechan", en: NCERT_BASE + "jujp1=0-22"},
+        { name: "Door Paas", en: NCERT_BASE + "judp1=0-19"},
+        { name: "Sab Rang", en: NCERT_BASE + "jusr1=0-9"},
+      ]},
+    ]
+  },
+  11: {
+    label: "Class 11",
+    subjects: [
+      { name: "Sanskrit", books: [{ name: "Bhaswati", en: NCERT_BASE + "khsk1=0-11" },
+                                  { name: "Shashwati", en: NCERT_BASE + "khsk2=0-11" }] },
+      { name: "Accountancy", books: [{ name: "Financial Accounting-1", en: NCERT_BASE + "khsk1=0-11" },
+                                     { name: "Financial Accounting-1", en: NCERT_BASE + "keac1=0-7" }] },
+      { name: "English", books: [
+        { name: "Woven Words", en: NCERT_BASE + "keww1=0-27"},
+        { name: "Hornbill", en: NCERT_BASE + "kehb1=0-14"}
+      ]},
+      { name: "Mathematics", books: [{ name: "Mathematics", en: NCERT_BASE + "kemh1=0-14", hi: NCERT_BASE + "khmh1=0-14" }] },
+      { name: "Physics", books: [
+        { name: "Physics Part I", en: NCERT_BASE + "keph1=0-7", hi: NCERT_BASE + "khph1=0-7" },
+        { name: "Physics Part II", en: NCERT_BASE + "keph2=0-7", hi: NCERT_BASE + "khph2=0-7" }
+      ]},
+      { name: "Hindi", books: [
+        { name: "Antra", en: NCERT_BASE + "khat1=0-16"},
+        { name: "Aroh", en: NCERT_BASE + "khar1=0-16"},
+        { name: "Aroh", en: NCERT_BASE + "khvt1=0-5!"},
+        { name: "Antral", en: NCERT_BASE + "khan1=0-2"}
+      ]},
+      { name: "Sociology", books: [
+        { name: "Understanding Sociology", en: NCERT_BASE + "kesy1=0-5", hi: NCERT_BASE + "khsy1=0-5" },
+        { name: "Understanding Society", en: NCERT_BASE + "kesy2=0-5", hi: NCERT_BASE + "khsy1=0-5" }
+      ]},
+      { name: "Chemistry", books: [
+        { name: "Chemistry Part I", en: NCERT_BASE + "kech1=0-6", hi: NCERT_BASE + "khch1=0-6" },
+        { name: "Chemistry Part II", en: NCERT_BASE + "kech2=0-6", hi: NCERT_BASE + "khch2=0-6" }
+      ]},
+      { name: "Biology", books: [{ name: "Biology", en: NCERT_BASE + "kebo1=0-19", hi: NCERT_BASE + "khbo1=0-19" }] },
+      { name: "Psychology", books: [{ name: "Introduction to Psychology", en: NCERT_BASE + "kepy1=0-8", hi: NCERT_BASE + "khpy1=0-8" }] },
+      { name: "Accountancy", books: [
+        { name: "Financial Accounting I", en: NCERT_BASE + "keac1=0-8", hi: NCERT_BASE + "khac1=0-8" },
+        { name: "Accountancy II", en: NCERT_BASE + "keac2=0-5", hi: NCERT_BASE + "khac2=0-5" }
+      ]},
+      { name: "History", books: [{ name: "Themes in World History", en: NCERT_BASE + "keks1=0-7", hi: NCERT_BASE + "khks1=0-7" }] },
+      { name: "Economics", books: [
+        { name: "Indian Economic Development", en: NCERT_BASE + "keec1=0-8", hi: NCERT_BASE + "khec1=0-8" },
+        { name: "Statistics For Economics", en: NCERT_BASE + "kest1=0-8", hi: NCERT_BASE + "khst1=0-8" }
+      ]},
+      { name: "Political Science", books: [
+        { name: "Political Theory", en: NCERT_BASE + "keps1=0-8", hi: NCERT_BASE + "khps1=0-8" },
+        { name: "India Constitution at Work", en: NCERT_BASE + "keps2=0-8", hi: NCERT_BASE + "khps2=0-8" }
+      ]},
+      { name: "Geography", books: [
+        { name: "India – Physical Environment", en: NCERT_BASE + "kegy1=0-7", hi: NCERT_BASE + "khgy1=0-7" },
+        { name: "Fundamentals of Physical Geography", en: NCERT_BASE + "kegy1=0-6", hi: NCERT_BASE + "khgy1=0-6" },
+        { name: "Practical Work in Geography", en: NCERT_BASE + "kegy3=0-6", hi: NCERT_BASE + "khgy3=0-6" }
+      ]},
+      { name: "Business Studies", books: [{ name: "Business Studies", en: NCERT_BASE + "kebs1=0-11", hi: NCERT_BASE + "khbs1=0-11" }] },
+      { name: "Urdu", books: [
+        { name: "Nai Awaz", en: NCERT_BASE + "kuna1=0-20"},
+        { name: "Dhanak", en: NCERT_BASE + "kudh1=0-27"},
+        { name: "Khyabane Urdu", en: NCERT_BASE + "kuku1=0-15"},
+      ]},
+      { name: "Health and Physical Education", books: [{ name: "Health and Physical Education", en: NCERT_BASE + "kehp1=0-11" }] },
+      { name: "Home Science", books: [
+        { name: "Human Ecology and Family Sciences-I", en: NCERT_BASE + "kehe1=0-7", hi: NCERT_BASE + "khhe1=0-7" },
+        { name: "Human Ecology and Family Sciences-II", en: NCERT_BASE + "kehe2=0-4", hi: NCERT_BASE + "khhe2=0-4" }
+      ]},
+      { name: "Creative Writing and Translation", books: [{ name: "Srijan", en: NCERT_BASE + "khsr1=0-4" }] },
+      { name: "Fine Art", books: [{ name: "An introduction to Indian Art", en: NCERT_BASE + "kefa1=0-8" }] },
+      { name: "Informatics Practices", books: [{ name: "Informatics Practices", en: NCERT_BASE + "keip1=0-8" }] },
+      { name: "Computer Science", books: [{ name: "Computer Science", en: NCERT_BASE + "kecs1=0-11" }] },
+      { name: "Bio Technology", books: [{ name: "Bio Technology", en: NCERT_BASE + "kecs1=0-11" }] },
+    ]
+  },
+  12: {
+    label: "Class 12",
+    subjects: []
+  }
+};
+
+// ---- Class Material page: open a class, render its subjects/books ----
+let currentMaterialClass = null;
+let currentMedium = "english";
+
+function openClassMaterial(classNum) {
+  currentMaterialClass = classNum;
+  currentMedium = "english";
+
+  const classData = NCERT_DATA[classNum];
+  const label = classData ? classData.label : `Class ${classNum}`;
+
+  document.getElementById("materialTitle").textContent = `${label} – NCERT Books`;
+
+  // Reset the medium toggle UI to English each time a class is opened
+  document.querySelectorAll("#mediumToggle button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.medium === "english");
+  });
+
+  navigate("materialPage");
+  renderSubjectGrid();
+}
+
+function setMedium(medium) {
+  currentMedium = medium;
+  document.querySelectorAll("#mediumToggle button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.medium === medium);
+  });
+  renderSubjectGrid();
+}
+
+function renderSubjectGrid() {
+  const grid = document.getElementById("subjectGrid");
+  grid.innerHTML = "";
+
+  const classData = NCERT_DATA[currentMaterialClass];
+  const subjects = classData ? classData.subjects : [];
+
+  if (!subjects || subjects.length === 0) {
+    grid.innerHTML = `<p style="opacity:.6; font-size:14px;">No study material available for this class yet.</p>`;
+    return;
+  }
+
+  subjects.forEach(subject => {
+    const card = document.createElement("div");
+    card.className = "subject-card";
+
+    const heading = document.createElement("h4");
+    heading.textContent = subject.name;
+    card.appendChild(heading);
+
+    subject.books.forEach(book => {
+      // Fall back to the English link if this book has no Hindi edition
+      const href = (currentMedium === "hindi" && book.hi) ? book.hi : book.en;
+
+      const link = document.createElement("a");
+      link.className = "book-link";
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.innerHTML = `<span>${book.name}</span><span class="go">Open PDF →</span>`;
+      card.appendChild(link);
+    });
+
+    grid.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>

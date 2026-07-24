@@ -1,0 +1,21 @@
+<div id="sidebar" class="sidebar {{tier}}">
+  <div class="sidebar-top">
+    <div class="sidebar-header">Menu</div>
+    <a href="/dashboard" class="{{#if (equal activePage "dashboard")}}active{{/if}}">🏠 Dashboard</a>
+    <a href="/profile" class="{{#if (equal activePage "profile")}}active{{/if}}">👤 Profile</a>
+    <a href="/courses" class="{{#if (equal activePage "courses")}}active{{/if}}">📚 Courses</a>
+    <a href="/settings" class="{{#if (equal activePage "settings")}}active{{/if}}">⚙️ Settings</a>
+  </div>
+
+  {{#if (equal tier "basic")}}
+  <div class="sidebar-bottom">
+    <a href="#" class="sidebar-cta upgrade" onclick="upgradePremium(event)">💎 Upgrade to Premium</a>
+  </div>
+  {{/if}}
+
+  {{#if (equal tier "premium")}}
+  <div class="sidebar-bottom">
+    <a href="#" class="sidebar-cta unsubscribe" onclick="unsubscribePremium(event)">🔻 Unsubscribe from Premium</a>
+  </div>
+  {{/if}}
+</div>

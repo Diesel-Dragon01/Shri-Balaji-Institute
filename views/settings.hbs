@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+<style>
+{{> base_styles }}
+
+.settings-section { margin-bottom: 30px; }
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: rgba(0,0,0,.45);
+  margin-bottom: 6px;
+}
+body.dark .settings-section-title { color: rgba(255,255,255,.45); }
+
+/* Toggle switch */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background-color: #cbd5e1; transition: .3s; border-radius: 999px;
+}
+.switch .slider::before {
+  position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.switch input:checked + .slider { background-color: #22c55e; }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+body.dark .switch .slider { background-color: #52525b; }
+
+.settings-btn {
+  padding: 8px 16px; border: none; border-radius: 8px;
+  background: #1e293b; color: white; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: .25s;
+}
+.settings-btn:hover { opacity: .85; transform: translateY(-1px); }
+.settings-btn.danger { background: #ef4444; }
+.settings-btn.danger:hover { background: #dc2626; }
+
+.status-badge { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.status-badge.connected { background: #dcfce7; color: #166534; }
+.status-badge.disconnected { background: #fee2e2; color: #991b1b; }
+body.dark .status-badge.connected { background: rgba(34,197,94,.15); color: #4ade80; }
+body.dark .status-badge.disconnected { background: rgba(239,68,68,.15); color: #f87171; }
+
+.password-form {
+  display: none; flex-direction: column; gap: 10px;
+  margin: 12px 0 22px; padding: 16px; border-radius: 12px;
+  background: rgba(0,0,0,.03);
+}
+body.dark .password-form { background: rgba(255,255,255,.04); }
+.password-form.open { display: flex; }
+.password-form input {
+  padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,.15);
+  font-size: 14px; background: transparent; color: inherit;
+}
+body.dark .password-form input { border-color: rgba(255,255,255,.15); }
+.password-form input:focus { outline: none; border-color: #facc15; }
+
+.profile-btn { padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: 0.25s; color: white; }
+.profile-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+.profile-btn.basic { background: #1e293b; }
+.profile-btn.premium { background: #047857; }
+.profile-btn.developer { background: #6d28d9; }
+</style>
+</head>
+<body class="{{#if (equal theme "dark")}}dark{{/if}}">
+
+{{> navbar }}
+{{> sidebar activePage="settings" }}
+
+<div class="container">
+  <div class="profile-card {{#if (equal tier "premium")}}premium-card{{/if}}">
+    <h2>⚙️ Settings</h2>
+    <hr class="profile-divider">
+
+    <div class="settings-section">
+      <div class="settings-section-title">🎨 Appearance</div>
+      <div class="info-row">
+        <span>🌙 Dark Mode</span>
+        <label class="switch">
+          <input type="checkbox" id="darkModeSwitch">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">👤 Profile</div>
+      <div class="info-row">
+        <span>🔑 Change Password</span>
+        <button class="settings-btn" onclick="togglePasswordForm()">Change</button>
+      </div>
+      <div id="passwordForm" class="password-form">
+        <input type="password" id="currentPassword" placeholder="Current password">
+        <input type="password" id="newPassword" placeholder="New password">
+        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+        <button class="profile-btn {{tier}}" onclick="changePassword()">💾 Update Password</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔔 Notifications</div>
+      <div class="info-row">
+        <span>📧 Email Notifications</span>
+        <label class="switch">
+          <input type="checkbox" id="emailNotifSwitch" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="info-row">
+        <span>📚 Course Updates</span>
+        <label class="switch">
+          <input type="checkbox" id="courseUpdatesSwitch" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔒 Security</div>
+      <div class="info-row">
+        <span>🔗 Google Account</span>
+        <span id="googleStatus" class="status-badge"></span>
+      </div>
+      <div class="info-row">
+        <span>🚪 Logout All Devices</span>
+        <button class="settings-btn danger" onclick="logoutAllDevices()">Logout All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{> footer }}
+
+{{> shared_scripts }}
+
+<script>
+// Change password
+function togglePasswordForm() {
+  document.getElementById("passwordForm").classList.toggle("open");
+}
+
+async function changePassword() {
+  const current = document.getElementById("currentPassword");
+  const next = document.getElementById("newPassword");
+  const confirm = document.getElementById("confirmPassword");
+
+  if (!current.value || !next.value || !confirm.value) {
+    showToast("❌ Please fill in all password fields.", "error");
+    return;
+  }
+  if (next.value !== confirm.value) {
+    showToast("❌ New passwords don't match.", "error");
+    return;
+  }
+
+  try {
+    const response = await fetch("/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        currentPassword: current.value,
+        newPassword: next.value
+      })
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      current.value = "";
+      next.value = "";
+      confirm.value = "";
+      document.getElementById("passwordForm").classList.remove("open");
+      showToast(data.message || "🔑 Password updated!");
+    } else {
+      showToast(data.message || "❌ Could not update password.", "error");
+    }
+  } catch (err) {
+    console.log(err);
+    showToast("❌ Something went wrong.", "error");
+  }
+}
+
+// Notification toggles — generic handler, reverts the switch on failure
+function bindSettingToggle(id, key) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener("change", async () => {
+    try {
+      const response = await fetch("/update-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: el.checked })
+      });
+      const data = await response.json();
+      if (data.success) {
+        showToast(data.message || "✅ Preference saved");
+      } else {
+        el.checked = !el.checked;
+        showToast(data.message || "❌ Could not save preference.", "error");
+      }
+    } catch (err) {
+      console.log(err);
+      el.checked = !el.checked;
+      showToast("❌ Something went wrong.", "error");
+    }
+  });
+}
+bindSettingToggle("emailNotifSwitch", "emailNotifications");
+bindSettingToggle("courseUpdatesSwitch", "courseUpdates");
+
+// Google connection status badge
+const googleStatus = document.getElementById("googleStatus");
+if (googleStatus) {
+  if (isGoogleUser) {
+    googleStatus.textContent = "✅ Connected";
+    googleStatus.classList.add("connected");
+  } else {
+    googleStatus.textContent = "Not Connected";
+    googleStatus.classList.add("disconnected");
+  }
+}
+
+// Logout everywhere
+async function logoutAllDevices() {
+  if (!confirm("This will log you out on every device. Continue?")) return;
+
+  try {
+    const response = await fetch("/logout-all", { method: "POST" });
+    const data = await response.json();
+
+    if (data.success) {
+      showToast(data.message || "🚪 Logged out everywhere.");
+      setTimeout(() => { window.location.href = "/"; }, 1500);
+    } else {
+      showToast(data.message || "❌ Could not log out other devices.", "error");
+    }
+  } catch (err) {
+    console.log(err);
+    showToast("❌ Something went wrong.", "error");
+  }
+}
+</script>
+</body>
+</html>

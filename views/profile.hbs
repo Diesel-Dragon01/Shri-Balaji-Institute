@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile</title>
+<style>
+{{> base_styles }}
+
+.profile-photo{
+  width:130px; height:130px; border-radius:50%; object-fit:cover;
+  border:4px solid #facc15; margin-bottom:18px; display:block; transition:0.3s;
+}
+.profile-name{ margin-bottom:8px; font-size:28px; }
+.member-badge{ display:inline-block; padding:8px 18px; border-radius:30px; font-size:14px; font-weight:bold; }
+.profile-info{ text-align:left; }
+.info-row{ display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,.08); }
+body.dark .info-row{ border-bottom:1px solid rgba(255,255,255,.08); }
+.profile-buttons{ margin-top:30px; display:flex; flex-direction:column; gap:15px; }
+.profile-btn.basic { background: #1e293b; color: white; }
+.profile-btn.premium { background: #047857; color: white; }
+.profile-btn.developer { background: #6d28d9; color: white; }
+.profile-btn { padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: 0.25s; }
+.profile-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+.bio-placeholder { color: rgba(100, 100, 100, 0.6); font-style: italic; }
+body.dark .bio-placeholder { color: rgba(255, 255, 255, 0.4); }
+.profile-bio {
+  margin: 15px auto; padding: 12px; min-height: 70px; max-width: 320px;
+  border: 2px dashed rgba(255,255,255,.18); border-radius: 12px; text-align: left; line-height: 1.5; transition: .2s;
+  font-size: 14px; color: rgba(0,0,0,0.7);
+}
+body.dark .profile-bio { color: rgba(255,255,255,0.75); }
+body:not(.dark) .profile-bio { border-color: rgba(0,0,0,.15); }
+.profile-bio[contenteditable="true"] { border-color: #facc15; background: rgba(250,204,21,.08); outline: none; }
+.profile-name[contenteditable="true"] { outline: none; border-bottom: 2px solid #facc15; }
+
+.photo-container{ position:relative; width:130px; height:130px; margin:0 auto 18px; }
+.photo-overlay{
+  position:absolute; inset:0; border-radius:50%; background:rgba(255,255,255,0.45);
+  backdrop-filter:blur(2px); display:flex; flex-direction:column; justify-content:center; align-items:center;
+  opacity:0; transition:.25s; cursor:pointer; font-weight:bold; color:#111; text-align:center;
+}
+.photo-overlay span{ font-size:13px; }
+.photo-container:hover .photo-overlay{ opacity:1; transform:scale(1.05); border-color:#ffffff; box-shadow:0 0 18px rgba(255,255,255,.55); }
+.camera-icon{ font-size:72px; transform:scale(0.8); transition:.25s; }
+</style>
+</head>
+<body class="{{#if (equal theme "dark")}}dark{{/if}}">
+
+{{> navbar }}
+{{> sidebar activePage="profile" }}
+
+<div class="container">
+  <div class="profile-card {{#if (equal tier "premium")}}premium-card{{/if}}">
+    <div class="photo-container">
+      <img src="{{profileImage}}" class="profile-photo">
+      <div class="photo-overlay" onclick="uploadProfilePhoto()">
+        <span class="camera-icon">📷</span>
+      </div>
+    </div>
+
+    <h2 class="profile-name" id="nameText" ondblclick="enableEdit()" contenteditable="false">
+      {{username}}
+    </h2>
+
+    <span class="member-badge {{tier}}">{{membershipName}}</span>
+
+    <p class="profile-bio" id="bioText" ondblclick="enableEdit()" contenteditable="false">
+      {{bio}}
+    </p>
+
+    <hr class="profile-divider">
+
+    <div class="profile-info">
+      <div class="info-row"><span>📧 Email</span><span>{{email}}</span></div>
+      <div class="info-row"><span>🆔 User ID</span><span>{{userId}}</span></div>
+      <div class="info-row"><span>🎓 Joined On</span><span>{{joinedDate}}</span></div>
+      <div class="info-row"><span>⭐ Membership</span><span>{{tier}}</span></div>
+    </div>
+
+    <div class="profile-buttons">
+      <button class="profile-btn {{tier}}" onclick="enableEdit()">✏️ Edit Profile</button>
+      <input type="file" id="photoInput" accept=".jpg,.jpeg,.png" hidden>
+      <button class="profile-btn {{tier}}" onclick="uploadProfilePhoto()">📷 Upload Photo</button>
+    </div>
+  </div>
+</div>
+
+{{> footer }}
+
+{{> shared_scripts }}
+
+<script>
+window.onload = () => {
+  const bio = document.getElementById("bioText");
+  if (bio.textContent.trim() === "") {
+    bio.textContent = "Click to add your bio...";
+    bio.classList.add("bio-placeholder");
+  }
+};
+
+//profile page editing
+let isEditing = false;
+function enableEdit() {
+  if (isEditing) return;
+  isEditing = true;
+
+  document.getElementById("nameText").contentEditable = "true";
+  document.getElementById("bioText").contentEditable = "true";
+
+  const bio = document.getElementById("bioText");
+  if (bio.classList.contains("bio-placeholder")) {
+    bio.textContent = "";
+    bio.classList.remove("bio-placeholder");
+  }
+
+  if (document.getElementById("saveBtn")) return;
+
+  const saveBtn = document.createElement("button");
+  saveBtn.id = "saveBtn";
+  saveBtn.className = "profile-btn";
+  saveBtn.textContent = "💾 Save";
+  saveBtn.onclick = saveEdit;
+  document.querySelector(".profile-buttons").appendChild(saveBtn);
+}
+
+async function saveEdit() {
+  const name = document.getElementById("nameText");
+  const bio = document.getElementById("bioText");
+
+  try {
+    const response = await fetch("/update-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: name.textContent.trim(),
+        bio: bio.textContent.trim()
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      name.contentEditable = "false";
+      bio.contentEditable = "false";
+      const saveBtn = document.getElementById("saveBtn");
+      if (saveBtn) saveBtn.remove();
+      isEditing = false;
+      showToast(data.message);
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    console.log(err);
+    showToast("❌ Something went wrong.", "error");
+  }
+}
+
+const photoInput = document.getElementById("photoInput");
+photoInput.addEventListener("change", async () => {
+  const file = photoInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("profilePhoto", file);
+
+  try {
+    const response = await fetch("/upload-photo", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      document.querySelector(".profile-photo").src = data.image;
+      document.querySelector(".profile-img").src = data.image;
+      showToast("📷 Profile photo updated!");
+    } else {
+      showToast(data.message, "error");
+    }
+  } catch (err) {
+    console.log(err);
+    showToast("❌ Upload failed.", "error");
+  }
+});
+
+function uploadProfilePhoto() {
+  if (!isGoogleUser) {
+    showToast("❌ Profile photo upload is available only for Google users.", "error");
+    return;
+  }
+  document.getElementById("photoInput").click();
+}
+</script>
+</body>
+</html>

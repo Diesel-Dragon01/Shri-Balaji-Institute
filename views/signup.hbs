@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our website so fire</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            background: #0f172a;
+        }
+    
+    @keyframes scrollBg {
+        from {
+            transform: rotate(15deg) translateX(0);
+        }
+
+        to {
+            transform: rotate(15deg) translateX(-100vw);
+        }
+    }
+
+    .bg-slider {
+        position: fixed;
+
+        top: -50vh;
+        left: -50vw;
+
+        width: 300vw;
+        height: 300vh;
+
+        display: flex;
+
+        animation: scrollBg 60s linear infinite;
+
+        z-index: -1;
+    }
+
+    .bg-slide {
+        width: 150vw;
+        height: 100%;
+
+        background: url("0014.jpg") center center / cover no-repeat;
+    }
+    
+
+    .container {
+        width: 100%;
+        max-width: 420px;
+
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(10px);
+
+        padding: 40px;
+        border-radius: 18px;
+
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+
+        text-align: center;
+
+        position: relative;
+        z-index: 10;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        color: #0f172a;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: 0.3s;
+        outline: none;
+    }
+
+    input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
+    }
+
+    .signup-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .signup-btn:hover {
+        background: #0f172a;
+    }
+
+    .login-link {
+        margin-top: 20px;
+        color: #4b5563;
+    }
+
+    .login-link a {
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .subtitle {
+        color: #6b7280;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+        z-index: 9999;
+        background: #22c55e;
+        pointer-events: none;
+    }
+    .toast.error { background: #ef4444; }
+    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    </style>
+</head>
+
+<body>
+    <div class="bg-slider">
+        <div class="bg-slide"></div>
+        <div class="bg-slide"></div>
+    </div>
+    <div class="container">
+        <h1>Create Account</h1>
+        <p class="subtitle">Join our family today</p>
+
+        <form id="form" action="/signup" method="POST">
+
+            <div class="form-group">
+                <input type="text" name="username" id="username"
+                    placeholder="Enter Username" required>
+            </div>
+
+            <div class="form-group">
+                <input type="password" name="password" id="password"
+                    placeholder="Enter Password" required>
+            </div>
+
+            <button type="submit" id="btn" class="signup-btn" >
+                Sign Up
+                
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account?
+            <a href="/">Login Now!</a>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let form = document.querySelector('#form');
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = "toast";
+            toast.classList.add(type);
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        form.addEventListener('submit', (ev) => {
+            ev.preventDefault();
+
+            let username = document.querySelector('#username').value;
+            let password = document.querySelector('#password').value;
+
+            axios.post('/signup', {
+                username,
+                password
+            })
+            .then(({ data }) => {
+                showToast(data.message || "✅ Account created!");
+                setTimeout(() => {
+                    window.location.href = '/?signup=success';
+                }, 1000);
+            })
+            .catch(err => {
+                console.error(err);
+                const message = err.response?.data?.message || "❌ Something went wrong.";
+                showToast(message, "error");
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
