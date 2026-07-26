@@ -7,7 +7,7 @@ const UserModel = require('./models/User.model');
 const LectureModel = require('./models/Lecture.model');
 const AccessLogModel = require('./models/AccessLog.model');
 const app = express();
-const PORT = 4444;
+const PORT = process.env.PORT || 4444;
 var Cookies = require('cookies')
 const jwt = require('jsonwebtoken');
 app.set('view engine', 'hbs');
@@ -35,9 +35,9 @@ hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
 const MongoDBStore = require('connect-mongodb-session')(session);
 var store = new MongoDBStore({
-    uri: 'mongodb://localhost:27017/connect_mongodb_session_test',
+    uri: process.env.MONGO_URI,
     collection: 'mySessions'
-}); 
+});
 
 store.on('error', function (error) {
     console.log(error);
@@ -45,7 +45,7 @@ store.on('error', function (error) {
 
 
 app.use(session({
-    secret: 'asbdsab avjsav fjvejr wjvejsf sgfksjejfgkwfgwghfkwkgfkw',
+    secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true, 
     store: store, 
@@ -612,7 +612,7 @@ app.use((err, req, res, next) => {
 });
 
 
-mongoose.connect('mongodb://localhost:27017/mydb')
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         app.listen(PORT, () => {
             console.log("Connected to:", mongoose.connection.name);
