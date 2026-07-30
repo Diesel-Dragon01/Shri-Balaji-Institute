@@ -18,6 +18,9 @@ const session = require('express-session');
 const hbs = require('hbs');
 const multer = require("multer");
 const fs = require("fs");
+const ResourceModel = require('./models/Resource.model');
+
+
 app.use(
     "/uploads",
     express.static(path.join(__dirname, "public", "uploads"))
@@ -238,6 +241,104 @@ app.post('/api/lectures', isLoggedIn, async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Returns all resources (PDFs/docs) for a class, grouped by subject, filtered by tier.
+app.get('/api/resources/:classNum', isLoggedIn, async (req, res) => {
+    try {
+        const classNum = Number(req.params.classNum);
+        if (!classNum || classNum < 1 || classNum > 12) {
+            return res.status(400).json({ success: false, message: "❌ Invalid class." });
+        }
+
+        const tierRank = { basic: 0, premium: 1, developer: 2 };
+        const userRank = tierRank[req.user.tier] ?? 0;
+
+        const resources = await ResourceModel.find({ classNum }).sort({ subject: 1, order: 1 });
+        const visible = resources.filter(r => (tierRank[r.tier] ?? 1) <= userRank);
+
+        const grouped = {};
+        visible.forEach(resource => {
+            if (!grouped[resource.subject]) grouped[resource.subject] = [];
+            grouped[resource.subject].push(resource);
+        });
+
+        res.json({ success: true, resources: grouped });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "❌ Could not load resources." });
+    }
+});
+
+// Add a resource — developer tier only.
+app.post('/api/resources', isLoggedIn, async (req, res) => {
+    if (req.user.tier !== 'developer') {
+        return res.status(403).json({ success: false, message: "❌ Not authorized." });
+    }
+
+    try {
+        const { classNum, subject, title, description, driveLink, fileType, order, tier } = req.body;
+
+        if (!classNum || !subject || !title || !driveLink) {
+            return res.status(400).json({ success: false, message: "❌ classNum, subject, title, and driveLink are required." });
+        }
+
+        const resource = await ResourceModel.create({
+            classNum, subject, title, description, driveLink, fileType, order, tier
+        });
+
+        res.json({ success: true, message: "✅ Resource added!", resource });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "❌ Failed to add resource." });
+    }
+});
+
+// Update a resource — developer tier only.
+app.put('/api/resources/:id', isLoggedIn, async (req, res) => {
+    if (req.user.tier !== 'developer') {
+        return res.status(403).json({ success: false, message: "❌ Not authorized." });
+    }
+
+    try {
+        const { classNum, subject, title, description, driveLink, fileType, order, tier } = req.body;
+
+        const resource = await ResourceModel.findByIdAndUpdate(
+            req.params.id,
+            { classNum, subject, title, description, driveLink, fileType, order, tier },
+            { new: true }
+        );
+
+        if (!resource) {
+            return res.status(404).json({ success: false, message: "❌ Resource not found." });
+        }
+
+        res.json({ success: true, message: "✅ Resource updated!", resource });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "❌ Failed to update resource." });
+    }
+});
+
+// Delete a resource — developer tier only.
+app.delete('/api/resources/:id', isLoggedIn, async (req, res) => {
+    if (req.user.tier !== 'developer') {
+        return res.status(403).json({ success: false, message: "❌ Not authorized." });
+    }
+
+    try {
+        const resource = await ResourceModel.findByIdAndDelete(req.params.id);
+
+        if (!resource) {
+            return res.status(404).json({ success: false, message: "❌ Resource not found." });
+        }
+
+        res.json({ success: true, message: "🗑️ Resource deleted." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "❌ Failed to delete resource." });
+    }
+});
+
 
 app.post('/signup', async (req, res) => {
     try {
@@ -610,6 +711,8 @@ app.use((err, req, res, next) => {
 
     next();
 });
+
+
 
 
 mongoose.connect(process.env.MONGO_URI)
