@@ -271,138 +271,6 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 {{> navbar activePage="dashboard" }}
 {{> sidebar activePage="dashboard" }}
 
-<!---------------- Add Pdf (developer only) ---------------->
-
-<div class="card dev-panel">
-  <h3>📄 Add Resource <span class="dev-badge">Developer</span></h3>
-  <p>Attach a Google Drive PDF/document to a class and subject. Visible only to developer-tier accounts.</p>
-
-  <div id="resourceFormMessage"></div>
-
-  <div class="dev-panel-grid">
-    <form class="lecture-form" id="addResourceForm">
-      <input type="hidden" id="resEditId" value="">
-
-      <div>
-        <label for="resClassNum">Class <span style="color:#dc2626">*</span></label>
-        <div class="custom-select" id="resClassSelect">
-          <button type="button" class="custom-select-trigger" id="resClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
-            <span id="resClassSelectLabel">Select class</span>
-            <span class="custom-select-arrow">▾</span>
-          </button>
-          <ul class="custom-select-options" id="resClassSelectOptions" role="listbox" tabindex="-1">
-            <li role="option" data-value="1">Class 1</li>
-            <li role="option" data-value="2">Class 2</li>
-            <li role="option" data-value="3">Class 3</li>
-            <li role="option" data-value="4">Class 4</li>
-            <li role="option" data-value="5">Class 5</li>
-            <li role="option" data-value="6">Class 6</li>
-            <li role="option" data-value="7">Class 7</li>
-            <li role="option" data-value="8">Class 8</li>
-            <li role="option" data-value="9">Class 9</li>
-            <li role="option" data-value="10">Class 10</li>
-            <li role="option" data-value="11">Class 11</li>
-            <li role="option" data-value="12">Class 12</li>
-          </ul>
-        </div>
-        <input type="hidden" id="resClassNum" name="classNum" required>
-      </div>
-
-      <div>
-        <label for="resSubject">Subject <span style="color:#dc2626">*</span></label>
-        <input id="resSubject" name="subject" type="text" placeholder="Mathematics" required>
-      </div>
-
-      <div class="full">
-        <label for="resTitle">Resource Title <span style="color:#dc2626">*</span></label>
-        <input id="resTitle" name="title" type="text" placeholder="Chapter 3 Notes" required>
-      </div>
-
-      <div class="full">
-        <label for="resDriveLink">Google Drive Link <span style="color:#dc2626">*</span></label>
-        <input id="resDriveLink" name="driveLink" type="text" placeholder="https://drive.google.com/file/d/..." required>
-      </div>
-
-      <div>
-        <label for="resFileType">File Type</label>
-        <select id="resFileType" name="fileType">
-          <option value="pdf" selected>PDF</option>
-          <option value="doc">Doc</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="resOrder">Sort Order</label>
-        <input id="resOrder" name="order" type="number" value="0">
-      </div>
-
-      <div>
-        <label for="resTier">Access Tier <span style="color:#dc2626">*</span></label>
-        <select id="resTier" name="tier">
-          <option value="basic">Basic</option>
-          <option value="premium" selected>Premium</option>
-          <option value="developer">Developer</option>
-        </select>
-      </div>
-
-      <div class="full">
-        <label for="resDescription">Description</label>
-        <textarea id="resDescription" name="description" maxlength="500" placeholder="A short summary of what this document covers..."></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" id="resCancelEditBtn" style="display:none; background:transparent; color:inherit; border:1px solid rgba(0,0,0,.15);">Cancel Edit</button>
-        <button type="submit" id="resSubmitBtn">Add Resource</button>
-      </div>
-    </form>
-
-    <div class="lecture-preview">
-      <div class="lecture-preview-thumb" id="resPreviewThumbWrap">
-        <div class="lecture-preview-placeholder" id="resPreviewPlaceholder">📄</div>
-      </div>
-      <div class="lecture-preview-body">
-        <div class="lecture-preview-meta">
-          <span class="lecture-preview-tag" id="resPreviewClassSubject">Subject · Class</span>
-          <span class="lecture-preview-tier" id="resPreviewTier">premium</span>
-        </div>
-        <div class="lecture-preview-title" id="resPreviewTitle">Resource Title</div>
-        <div class="lecture-preview-desc" id="resPreviewDesc">The description will appear here.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="manage-lectures">
-    <div class="manage-lectures-header">
-      <h4>📋 Manage Resources</h4>
-      <div class="custom-select" id="manageResClassSelect" style="max-width:180px;">
-        <button type="button" class="custom-select-trigger" id="manageResClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
-          <span id="manageResClassSelectLabel">Select class</span>
-          <span class="custom-select-arrow">▾</span>
-        </button>
-        <ul class="custom-select-options" id="manageResClassSelectOptions" role="listbox" tabindex="-1">
-          <li role="option" data-value="1">Class 1</li>
-          <li role="option" data-value="2">Class 2</li>
-          <li role="option" data-value="3">Class 3</li>
-          <li role="option" data-value="4">Class 4</li>
-          <li role="option" data-value="5">Class 5</li>
-          <li role="option" data-value="6">Class 6</li>
-          <li role="option" data-value="7">Class 7</li>
-          <li role="option" data-value="8">Class 8</li>
-          <li role="option" data-value="9">Class 9</li>
-          <li role="option" data-value="10">Class 10</li>
-          <li role="option" data-value="11">Class 11</li>
-          <li role="option" data-value="12">Class 12</li>
-        </ul>
-      </div>
-    </div>
-    <div id="manageResourcesList">
-      <p class="manage-lectures-empty">Select a class above to see its resources.</p>
-    </div>
-  </div>
-</div>  
-  
-
 <!-- ================= Dashboard Page ================= -->
 <div id="dashboardPage" class="page active">
   <div class="container">
@@ -535,6 +403,136 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
         </div>
         <div id="manageLecturesList">
           <p class="manage-lectures-empty">Select a class above to see its lectures.</p>
+        </div>
+      </div>
+    </div>
+
+    <!---------------- Add Resource / PDF (developer only) ---------------->
+    <div class="card dev-panel">
+      <h3>📄 Add Resource <span class="dev-badge">Developer</span></h3>
+      <p>Attach a Google Drive PDF/document to a class and subject. Visible only to developer-tier accounts.</p>
+
+      <div id="resourceFormMessage"></div>
+
+      <div class="dev-panel-grid">
+        <form class="lecture-form" id="addResourceForm">
+          <input type="hidden" id="resEditId" value="">
+
+          <div>
+            <label for="resClassNum">Class <span style="color:#dc2626">*</span></label>
+            <div class="custom-select" id="resClassSelect">
+              <button type="button" class="custom-select-trigger" id="resClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="resClassSelectLabel">Select class</span>
+                <span class="custom-select-arrow">▾</span>
+              </button>
+              <ul class="custom-select-options" id="resClassSelectOptions" role="listbox" tabindex="-1">
+                <li role="option" data-value="1">Class 1</li>
+                <li role="option" data-value="2">Class 2</li>
+                <li role="option" data-value="3">Class 3</li>
+                <li role="option" data-value="4">Class 4</li>
+                <li role="option" data-value="5">Class 5</li>
+                <li role="option" data-value="6">Class 6</li>
+                <li role="option" data-value="7">Class 7</li>
+                <li role="option" data-value="8">Class 8</li>
+                <li role="option" data-value="9">Class 9</li>
+                <li role="option" data-value="10">Class 10</li>
+                <li role="option" data-value="11">Class 11</li>
+                <li role="option" data-value="12">Class 12</li>
+              </ul>
+            </div>
+            <input type="hidden" id="resClassNum" name="classNum" required>
+          </div>
+
+          <div>
+            <label for="resSubject">Subject <span style="color:#dc2626">*</span></label>
+            <input id="resSubject" name="subject" type="text" placeholder="Mathematics" required>
+          </div>
+
+          <div class="full">
+            <label for="resTitle">Resource Title <span style="color:#dc2626">*</span></label>
+            <input id="resTitle" name="title" type="text" placeholder="Chapter 3 Notes" required>
+          </div>
+
+          <div class="full">
+            <label for="resDriveLink">Google Drive Link <span style="color:#dc2626">*</span></label>
+            <input id="resDriveLink" name="driveLink" type="text" placeholder="https://drive.google.com/file/d/..." required>
+          </div>
+
+          <div>
+            <label for="resFileType">File Type</label>
+            <select id="resFileType" name="fileType">
+              <option value="pdf" selected>PDF</option>
+              <option value="doc">Doc</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="resOrder">Sort Order</label>
+            <input id="resOrder" name="order" type="number" value="0">
+          </div>
+
+          <div>
+            <label for="resTier">Access Tier <span style="color:#dc2626">*</span></label>
+            <select id="resTier" name="tier">
+              <option value="basic">Basic</option>
+              <option value="premium" selected>Premium</option>
+              <option value="developer">Developer</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="resDescription">Description</label>
+            <textarea id="resDescription" name="description" maxlength="500" placeholder="A short summary of what this document covers..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="resCancelEditBtn" style="display:none; background:transparent; color:inherit; border:1px solid rgba(0,0,0,.15);">Cancel Edit</button>
+            <button type="submit" id="resSubmitBtn">Add Resource</button>
+          </div>
+        </form>
+
+        <div class="lecture-preview">
+          <div class="lecture-preview-thumb" id="resPreviewThumbWrap">
+            <div class="lecture-preview-placeholder" id="resPreviewPlaceholder">📄</div>
+          </div>
+          <div class="lecture-preview-body">
+            <div class="lecture-preview-meta">
+              <span class="lecture-preview-tag" id="resPreviewClassSubject">Subject · Class</span>
+              <span class="lecture-preview-tier" id="resPreviewTier">premium</span>
+            </div>
+            <div class="lecture-preview-title" id="resPreviewTitle">Resource Title</div>
+            <div class="lecture-preview-desc" id="resPreviewDesc">The description will appear here.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="manage-lectures">
+        <div class="manage-lectures-header">
+          <h4>📋 Manage Resources</h4>
+          <div class="custom-select" id="manageResClassSelect" style="max-width:180px;">
+            <button type="button" class="custom-select-trigger" id="manageResClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+              <span id="manageResClassSelectLabel">Select class</span>
+              <span class="custom-select-arrow">▾</span>
+            </button>
+            <ul class="custom-select-options" id="manageResClassSelectOptions" role="listbox" tabindex="-1">
+              <li role="option" data-value="1">Class 1</li>
+              <li role="option" data-value="2">Class 2</li>
+              <li role="option" data-value="3">Class 3</li>
+              <li role="option" data-value="4">Class 4</li>
+              <li role="option" data-value="5">Class 5</li>
+              <li role="option" data-value="6">Class 6</li>
+              <li role="option" data-value="7">Class 7</li>
+              <li role="option" data-value="8">Class 8</li>
+              <li role="option" data-value="9">Class 9</li>
+              <li role="option" data-value="10">Class 10</li>
+              <li role="option" data-value="11">Class 11</li>
+              <li role="option" data-value="12">Class 12</li>
+            </ul>
+          </div>
+        </div>
+        <div id="manageResourcesList">
+          <p class="manage-lectures-empty">Select a class above to see its resources.</p>
         </div>
       </div>
     </div>
@@ -983,6 +981,274 @@ if (lectureForm) {
   }
 
   updatePreview();
+}
+
+// ---- Add/Edit Resource (developer only) ----
+const resourceForm = document.getElementById("addResourceForm");
+if (resourceForm) {
+  const driveLinkInput = document.getElementById("resDriveLink");
+  const resEditIdInput = document.getElementById("resEditId");
+  const resSubmitBtn = document.getElementById("resSubmitBtn");
+  const resCancelEditBtn = document.getElementById("resCancelEditBtn");
+
+  // ---- Custom class dropdown (Add/Edit form) ----
+  const resClassSelect = document.getElementById("resClassSelect");
+  const resClassSelectTrigger = document.getElementById("resClassSelectTrigger");
+  const resClassSelectLabel = document.getElementById("resClassSelectLabel");
+  const resClassSelectOptions = document.getElementById("resClassSelectOptions");
+  const resClassNumInput = document.getElementById("resClassNum");
+
+  function closeResClassSelect() {
+    resClassSelect.classList.remove("open");
+    resClassSelectTrigger.setAttribute("aria-expanded", "false");
+  }
+  function openResClassSelect() {
+    resClassSelect.classList.add("open");
+    resClassSelectTrigger.setAttribute("aria-expanded", "true");
+  }
+  resClassSelectTrigger.addEventListener("click", () => {
+    resClassSelect.classList.contains("open") ? closeResClassSelect() : openResClassSelect();
+  });
+  resClassSelectOptions.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", () => {
+      resClassNumInput.value = option.dataset.value;
+      resClassSelectLabel.textContent = option.textContent;
+      resClassSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      option.classList.add("active");
+      closeResClassSelect();
+      updateResPreview();
+    });
+  });
+
+  function resetResClassSelect() {
+    resClassNumInput.value = "";
+    resClassSelectLabel.textContent = "Select class";
+    resClassSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+    closeResClassSelect();
+  }
+
+  function setResClassSelectValue(classNum) {
+    resClassNumInput.value = classNum;
+    const match = [...resClassSelectOptions.querySelectorAll("li")].find(li => li.dataset.value == classNum);
+    resClassSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+    if (match) {
+      resClassSelectLabel.textContent = match.textContent;
+      match.classList.add("active");
+    }
+  }
+
+  // ---- Custom class dropdown (Manage list filter) ----
+  const manageResClassSelect = document.getElementById("manageResClassSelect");
+  const manageResClassSelectTrigger = document.getElementById("manageResClassSelectTrigger");
+  const manageResClassSelectLabel = document.getElementById("manageResClassSelectLabel");
+  const manageResClassSelectOptions = document.getElementById("manageResClassSelectOptions");
+
+  function closeManageResClassSelect() {
+    manageResClassSelect.classList.remove("open");
+    manageResClassSelectTrigger.setAttribute("aria-expanded", "false");
+  }
+  manageResClassSelectTrigger.addEventListener("click", () => {
+    if (manageResClassSelect.classList.contains("open")) {
+      closeManageResClassSelect();
+    } else {
+      manageResClassSelect.classList.add("open");
+      manageResClassSelectTrigger.setAttribute("aria-expanded", "true");
+    }
+  });
+  manageResClassSelectOptions.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", () => {
+      manageResClassSelectLabel.textContent = option.textContent;
+      manageResClassSelectOptions.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      option.classList.add("active");
+      closeManageResClassSelect();
+      loadManageResources(Number(option.dataset.value));
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!resClassSelect.contains(e.target)) closeResClassSelect();
+    if (!manageResClassSelect.contains(e.target)) closeManageResClassSelect();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeResClassSelect(); closeManageResClassSelect(); }
+  });
+
+  // ---- Live preview ----
+  const resPreviewClassSubject = document.getElementById("resPreviewClassSubject");
+  const resPreviewTier = document.getElementById("resPreviewTier");
+  const resPreviewTitle = document.getElementById("resPreviewTitle");
+  const resPreviewDesc = document.getElementById("resPreviewDesc");
+
+  function updateResPreview() {
+    const classNum = document.getElementById("resClassNum").value;
+    const subject = document.getElementById("resSubject").value.trim();
+    const title = document.getElementById("resTitle").value.trim();
+    const description = document.getElementById("resDescription").value.trim();
+    const tier = document.getElementById("resTier").value;
+
+    resPreviewClassSubject.textContent = `${subject || "Subject"}${classNum ? " · Class " + classNum : ""}`;
+    resPreviewTier.textContent = tier;
+    resPreviewTitle.textContent = title || "Resource Title";
+    resPreviewDesc.textContent = description || "The description will appear here.";
+  }
+
+  ["resSubject", "resTitle", "resDescription", "resTier"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updateResPreview);
+  });
+
+  // ---- Edit mode ----
+  function enterResEditMode(resource) {
+    resEditIdInput.value = resource._id;
+    setResClassSelectValue(resource.classNum);
+    document.getElementById("resSubject").value = resource.subject || "";
+    document.getElementById("resTitle").value = resource.title || "";
+    document.getElementById("resDescription").value = resource.description || "";
+    document.getElementById("resOrder").value = resource.order || 0;
+    document.getElementById("resTier").value = resource.tier || "premium";
+    document.getElementById("resFileType").value = resource.fileType || "pdf";
+    driveLinkInput.value = resource.driveLink || "";
+
+    resSubmitBtn.textContent = "Update Resource";
+    resCancelEditBtn.style.display = "inline-block";
+    updateResPreview();
+
+    document.getElementById("addResourceForm").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function exitResEditMode() {
+    resEditIdInput.value = "";
+    resourceForm.reset();
+    resetResClassSelect();
+    document.getElementById("resTier").value = "premium";
+    document.getElementById("resOrder").value = 0;
+    document.getElementById("resFileType").value = "pdf";
+    resSubmitBtn.textContent = "Add Resource";
+    resCancelEditBtn.style.display = "none";
+    updateResPreview();
+  }
+
+  resCancelEditBtn.addEventListener("click", exitResEditMode);
+
+  // ---- Submit (create or update) ----
+  resourceForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      classNum: Number(document.getElementById("resClassNum").value),
+      subject: document.getElementById("resSubject").value.trim(),
+      title: document.getElementById("resTitle").value.trim(),
+      description: document.getElementById("resDescription").value.trim(),
+      driveLink: driveLinkInput.value.trim(),
+      fileType: document.getElementById("resFileType").value,
+      order: Number(document.getElementById("resOrder").value) || 0,
+      tier: document.getElementById("resTier").value
+    };
+
+    if (!payload.classNum || !payload.subject || !payload.title || !payload.driveLink) {
+      showToast("❌ Please fill in class, subject, title, and drive link.", "error");
+      return;
+    }
+
+    const editId = resEditIdInput.value;
+    const isEditing = !!editId;
+
+    resSubmitBtn.disabled = true;
+    resSubmitBtn.textContent = isEditing ? "Updating..." : "Adding...";
+
+    try {
+      const res = await fetch(isEditing ? `/api/resources/${editId}` : "/api/resources", {
+        method: isEditing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || (isEditing ? "✅ Resource updated!" : "✅ Resource added!"));
+        exitResEditMode();
+
+        const activeManageOption = manageResClassSelectOptions.querySelector("li.active");
+        if (activeManageOption && Number(activeManageOption.dataset.value) === payload.classNum) {
+          loadManageResources(payload.classNum);
+        }
+      } else {
+        showToast(data.message || "❌ Failed to save resource.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Something went wrong.", "error");
+    } finally {
+      resSubmitBtn.disabled = false;
+      resSubmitBtn.textContent = isEditing ? "Update Resource" : "Add Resource";
+    }
+  });
+
+  // ---- Manage Resources list ----
+  async function loadManageResources(classNum) {
+    const list = document.getElementById("manageResourcesList");
+    list.innerHTML = `<p class="manage-lectures-empty">Loading…</p>`;
+
+    try {
+      const res = await fetch(`/api/resources/${classNum}`);
+      const data = await res.json();
+
+      if (!data.success) {
+        list.innerHTML = `<p class="manage-lectures-empty">${data.message || "Could not load resources."}</p>`;
+        return;
+      }
+
+      const allResources = Object.values(data.resources).flat();
+
+      if (allResources.length === 0) {
+        list.innerHTML = `<p class="manage-lectures-empty">No resources for this class yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      allResources.forEach(resource => {
+        const row = document.createElement("div");
+        row.className = "manage-lecture-row";
+        row.innerHTML = `
+          <div class="manage-lecture-info">
+            <div class="manage-lecture-title">${resource.title}</div>
+            <div class="manage-lecture-sub">${resource.subject} · ${resource.tier} · ${resource.fileType}</div>
+          </div>
+          <div class="manage-lecture-actions">
+            <button class="manage-edit-btn" type="button">Edit</button>
+            <button class="manage-delete-btn" type="button">Delete</button>
+          </div>
+        `;
+        row.querySelector(".manage-edit-btn").addEventListener("click", () => enterResEditMode(resource));
+        row.querySelector(".manage-delete-btn").addEventListener("click", () => deleteResource(resource._id, classNum));
+        list.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = `<p class="manage-lectures-empty">Something went wrong loading resources.</p>`;
+    }
+  }
+
+  async function deleteResource(id, classNum) {
+    if (!confirm("Delete this resource? This can't be undone.")) return;
+
+    try {
+      const res = await fetch(`/api/resources/${id}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || "🗑️ Resource deleted.");
+        loadManageResources(classNum);
+        if (resEditIdInput.value === id) exitResEditMode();
+      } else {
+        showToast(data.message || "❌ Failed to delete resource.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Something went wrong.", "error");
+    }
+  }
+
+  updateResPreview();
 }
 
 // ---- NCERT study material ----
