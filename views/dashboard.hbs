@@ -271,6 +271,138 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 {{> navbar activePage="dashboard" }}
 {{> sidebar activePage="dashboard" }}
 
+<!---------------- Add Pdf (developer only) ---------------->
+
+<div class="card dev-panel">
+  <h3>📄 Add Resource <span class="dev-badge">Developer</span></h3>
+  <p>Attach a Google Drive PDF/document to a class and subject. Visible only to developer-tier accounts.</p>
+
+  <div id="resourceFormMessage"></div>
+
+  <div class="dev-panel-grid">
+    <form class="lecture-form" id="addResourceForm">
+      <input type="hidden" id="resEditId" value="">
+
+      <div>
+        <label for="resClassNum">Class <span style="color:#dc2626">*</span></label>
+        <div class="custom-select" id="resClassSelect">
+          <button type="button" class="custom-select-trigger" id="resClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <span id="resClassSelectLabel">Select class</span>
+            <span class="custom-select-arrow">▾</span>
+          </button>
+          <ul class="custom-select-options" id="resClassSelectOptions" role="listbox" tabindex="-1">
+            <li role="option" data-value="1">Class 1</li>
+            <li role="option" data-value="2">Class 2</li>
+            <li role="option" data-value="3">Class 3</li>
+            <li role="option" data-value="4">Class 4</li>
+            <li role="option" data-value="5">Class 5</li>
+            <li role="option" data-value="6">Class 6</li>
+            <li role="option" data-value="7">Class 7</li>
+            <li role="option" data-value="8">Class 8</li>
+            <li role="option" data-value="9">Class 9</li>
+            <li role="option" data-value="10">Class 10</li>
+            <li role="option" data-value="11">Class 11</li>
+            <li role="option" data-value="12">Class 12</li>
+          </ul>
+        </div>
+        <input type="hidden" id="resClassNum" name="classNum" required>
+      </div>
+
+      <div>
+        <label for="resSubject">Subject <span style="color:#dc2626">*</span></label>
+        <input id="resSubject" name="subject" type="text" placeholder="Mathematics" required>
+      </div>
+
+      <div class="full">
+        <label for="resTitle">Resource Title <span style="color:#dc2626">*</span></label>
+        <input id="resTitle" name="title" type="text" placeholder="Chapter 3 Notes" required>
+      </div>
+
+      <div class="full">
+        <label for="resDriveLink">Google Drive Link <span style="color:#dc2626">*</span></label>
+        <input id="resDriveLink" name="driveLink" type="text" placeholder="https://drive.google.com/file/d/..." required>
+      </div>
+
+      <div>
+        <label for="resFileType">File Type</label>
+        <select id="resFileType" name="fileType">
+          <option value="pdf" selected>PDF</option>
+          <option value="doc">Doc</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="resOrder">Sort Order</label>
+        <input id="resOrder" name="order" type="number" value="0">
+      </div>
+
+      <div>
+        <label for="resTier">Access Tier <span style="color:#dc2626">*</span></label>
+        <select id="resTier" name="tier">
+          <option value="basic">Basic</option>
+          <option value="premium" selected>Premium</option>
+          <option value="developer">Developer</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label for="resDescription">Description</label>
+        <textarea id="resDescription" name="description" maxlength="500" placeholder="A short summary of what this document covers..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="resCancelEditBtn" style="display:none; background:transparent; color:inherit; border:1px solid rgba(0,0,0,.15);">Cancel Edit</button>
+        <button type="submit" id="resSubmitBtn">Add Resource</button>
+      </div>
+    </form>
+
+    <div class="lecture-preview">
+      <div class="lecture-preview-thumb" id="resPreviewThumbWrap">
+        <div class="lecture-preview-placeholder" id="resPreviewPlaceholder">📄</div>
+      </div>
+      <div class="lecture-preview-body">
+        <div class="lecture-preview-meta">
+          <span class="lecture-preview-tag" id="resPreviewClassSubject">Subject · Class</span>
+          <span class="lecture-preview-tier" id="resPreviewTier">premium</span>
+        </div>
+        <div class="lecture-preview-title" id="resPreviewTitle">Resource Title</div>
+        <div class="lecture-preview-desc" id="resPreviewDesc">The description will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="manage-lectures">
+    <div class="manage-lectures-header">
+      <h4>📋 Manage Resources</h4>
+      <div class="custom-select" id="manageResClassSelect" style="max-width:180px;">
+        <button type="button" class="custom-select-trigger" id="manageResClassSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="manageResClassSelectLabel">Select class</span>
+          <span class="custom-select-arrow">▾</span>
+        </button>
+        <ul class="custom-select-options" id="manageResClassSelectOptions" role="listbox" tabindex="-1">
+          <li role="option" data-value="1">Class 1</li>
+          <li role="option" data-value="2">Class 2</li>
+          <li role="option" data-value="3">Class 3</li>
+          <li role="option" data-value="4">Class 4</li>
+          <li role="option" data-value="5">Class 5</li>
+          <li role="option" data-value="6">Class 6</li>
+          <li role="option" data-value="7">Class 7</li>
+          <li role="option" data-value="8">Class 8</li>
+          <li role="option" data-value="9">Class 9</li>
+          <li role="option" data-value="10">Class 10</li>
+          <li role="option" data-value="11">Class 11</li>
+          <li role="option" data-value="12">Class 12</li>
+        </ul>
+      </div>
+    </div>
+    <div id="manageResourcesList">
+      <p class="manage-lectures-empty">Select a class above to see its resources.</p>
+    </div>
+  </div>
+</div>  
+  
+
 <!-- ================= Dashboard Page ================= -->
 <div id="dashboardPage" class="page active">
   <div class="container">
