@@ -135,7 +135,7 @@ app.get("/profile", isLoggedIn, (req, res) => {
         isGoogleUser: !!req.user.googleid,
         contactEmail: process.env.CONTACT_EMAIL,
         contactPhone: process.env.CONTACT_PHONE,
-        country: "India, Delhi"
+        country: "Delhi,India"
     });
 });
 
@@ -148,7 +148,7 @@ app.get('/settings', isLoggedIn, (req, res) => {
         isGoogleUser: !!req.user.googleid,
         contactEmail: process.env.CONTACT_EMAIL,
         contactPhone: process.env.CONTACT_PHONE,
-        country: "India, Delhi"
+        country: "Delhi,India"
     });
 });
 
@@ -171,7 +171,7 @@ app.get('/courses', isLoggedIn, (req, res) => {
         isGoogleUser,
         contactEmail: process.env.CONTACT_EMAIL,
         contactPhone: process.env.CONTACT_PHONE,
-        country: "India, Delhi"
+        country: "Delhi,India"
     });
 });
 
