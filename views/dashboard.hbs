@@ -142,6 +142,21 @@ body.dark .lecture-form textarea {
 .lecture-form button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 .dev-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
 
+/* Add Lecture / Add Resource mode toggle */
+.dev-mode-toggle {
+  display: inline-flex; border-radius: 999px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,.15); margin-bottom: 20px;
+}
+body.dark .dev-mode-toggle { border-color: rgba(255,255,255,.18); }
+.dev-mode-toggle button {
+  padding: 9px 22px; border: none; background: transparent; cursor: pointer;
+  font-weight: 700; font-size: 13px; color: inherit; font-family: inherit;
+  display: flex; align-items: center; gap: 6px;
+}
+.dev-mode-toggle button.active { background: #7c3aed; color: white; }
+.dev-mode-section { display: none; }
+.dev-mode-section.active { display: block; }
+
 /* Custom dark-themed dropdown (replaces native <select> for the class picker,
    which the browser renders with its own uncontrollable light popup styling) */
 .custom-select { position: relative; }
@@ -287,9 +302,15 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 
     {{#if (equal tier "developer")}}
     <div class="card dev-panel">
-      <h3>🛠️ Add Lecture <span class="dev-badge">Developer</span></h3>
-      <p>Attach a YouTube video to a class and subject. Visible only to developer-tier accounts.</p>
+      <h3>🛠️ Add Content <span class="dev-badge">Developer</span></h3>
+      <p>Attach a YouTube lecture or a Google Drive document to a class and subject. Visible only to developer-tier accounts.</p>
 
+      <div class="dev-mode-toggle" id="devModeToggle">
+        <button type="button" data-mode="lecture" class="active" onclick="setDevMode('lecture')">🎬 Add Lecture</button>
+        <button type="button" data-mode="resource" onclick="setDevMode('resource')">📄 Add Resource</button>
+      </div>
+
+      <div id="lectureModeSection" class="dev-mode-section active">
       <div id="lectureFormMessage"></div>
 
       <div class="dev-panel-grid">
@@ -344,11 +365,18 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 
           <div>
             <label for="lecTier">Access Tier <span style="color:#dc2626">*</span></label>
-            <select id="lecTier" name="tier">
-              <option value="basic">Basic</option>
-              <option value="premium" selected>Premium</option>
-              <option value="developer">Developer</option>
-            </select>
+            <div class="custom-select" id="lecTierSelect">
+              <button type="button" class="custom-select-trigger" id="lecTierSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="lecTierSelectLabel">Premium</span>
+                <span class="custom-select-arrow">▾</span>
+              </button>
+              <ul class="custom-select-options" id="lecTierSelectOptions" role="listbox" tabindex="-1">
+                <li role="option" data-value="basic">Basic</li>
+                <li role="option" data-value="premium" class="active">Premium</li>
+                <li role="option" data-value="developer">Developer</li>
+              </ul>
+            </div>
+            <input type="hidden" id="lecTier" name="tier" value="premium">
           </div>
 
           <div class="full">
@@ -405,13 +433,10 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
           <p class="manage-lectures-empty">Select a class above to see its lectures.</p>
         </div>
       </div>
-    </div>
+      </div>
+      <!-- /lectureModeSection -->
 
-    <!---------------- Add Resource / PDF (developer only) ---------------->
-    <div class="card dev-panel">
-      <h3>📄 Add Resource <span class="dev-badge">Developer</span></h3>
-      <p>Attach a Google Drive PDF/document to a class and subject. Visible only to developer-tier accounts.</p>
-
+      <div id="resourceModeSection" class="dev-mode-section">
       <div id="resourceFormMessage"></div>
 
       <div class="dev-panel-grid">
@@ -460,11 +485,18 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 
           <div>
             <label for="resFileType">File Type</label>
-            <select id="resFileType" name="fileType">
-              <option value="pdf" selected>PDF</option>
-              <option value="doc">Doc</option>
-              <option value="other">Other</option>
-            </select>
+            <div class="custom-select" id="resFileTypeSelect">
+              <button type="button" class="custom-select-trigger" id="resFileTypeSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="resFileTypeSelectLabel">PDF</span>
+                <span class="custom-select-arrow">▾</span>
+              </button>
+              <ul class="custom-select-options" id="resFileTypeSelectOptions" role="listbox" tabindex="-1">
+                <li role="option" data-value="pdf" class="active">PDF</li>
+                <li role="option" data-value="doc">Doc</li>
+                <li role="option" data-value="other">Other</li>
+              </ul>
+            </div>
+            <input type="hidden" id="resFileType" name="fileType" value="pdf">
           </div>
 
           <div>
@@ -474,11 +506,18 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
 
           <div>
             <label for="resTier">Access Tier <span style="color:#dc2626">*</span></label>
-            <select id="resTier" name="tier">
-              <option value="basic">Basic</option>
-              <option value="premium" selected>Premium</option>
-              <option value="developer">Developer</option>
-            </select>
+            <div class="custom-select" id="resTierSelect">
+              <button type="button" class="custom-select-trigger" id="resTierSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="resTierSelectLabel">Premium</span>
+                <span class="custom-select-arrow">▾</span>
+              </button>
+              <ul class="custom-select-options" id="resTierSelectOptions" role="listbox" tabindex="-1">
+                <li role="option" data-value="basic">Basic</li>
+                <li role="option" data-value="premium" class="active">Premium</li>
+                <li role="option" data-value="developer">Developer</li>
+              </ul>
+            </div>
+            <input type="hidden" id="resTier" name="tier" value="premium">
           </div>
 
           <div class="full">
@@ -535,6 +574,8 @@ body.dark .manage-lecture-row { background: rgba(255,255,255,.05); }
           <p class="manage-lectures-empty">Select a class above to see its resources.</p>
         </div>
       </div>
+      </div>
+      <!-- /resourceModeSection -->
     </div>
     {{/if}}
 
@@ -626,6 +667,21 @@ function navigate(page) {
   if (target) target.classList.add("active");
   document.getElementById("sidebar").classList.remove("active");
   document.getElementById("overlay").classList.remove("active");
+}
+
+// ---- Add Lecture / Add Resource mode toggle (developer panel) ----
+function setDevMode(mode) {
+  const toggle = document.getElementById("devModeToggle");
+  if (!toggle) return;
+
+  toggle.querySelectorAll("button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+
+  const lectureSection = document.getElementById("lectureModeSection");
+  const resourceSection = document.getElementById("resourceModeSection");
+  if (lectureSection) lectureSection.classList.toggle("active", mode === "lecture");
+  if (resourceSection) resourceSection.classList.toggle("active", mode === "resource");
 }
 
 // Welcome banner — actual time-of-day greeting + today's date (was hardcoded "Good Evening" before)
@@ -774,12 +830,60 @@ if (lectureForm) {
     });
   });
 
+  // ---- Generic simple dropdown wiring (Access Tier, File Type — non-filtering selects) ----
+  // Returns a close() function so callers can wire it into outside-click/escape handling.
+  function wireSimpleDropdown(selectId, triggerId, labelId, optionsId, hiddenInputId, onChange) {
+    const select = document.getElementById(selectId);
+    const trigger = document.getElementById(triggerId);
+    const label = document.getElementById(labelId);
+    const options = document.getElementById(optionsId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+
+    function close() {
+      select.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function open() {
+      select.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+    trigger.addEventListener("click", () => {
+      select.classList.contains("open") ? close() : open();
+    });
+    options.querySelectorAll("li").forEach(option => {
+      option.addEventListener("click", () => {
+        hiddenInput.value = option.dataset.value;
+        label.textContent = option.textContent;
+        options.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+        option.classList.add("active");
+        close();
+        if (onChange) onChange();
+      });
+    });
+    function setValue(value) {
+      hiddenInput.value = value;
+      const match = [...options.querySelectorAll("li")].find(li => li.dataset.value === value);
+      options.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      if (match) {
+        label.textContent = match.textContent;
+        match.classList.add("active");
+      }
+    }
+    return { select, close, setValue };
+  }
+
+  const lecTierDropdown = wireSimpleDropdown(
+    "lecTierSelect", "lecTierSelectTrigger", "lecTierSelectLabel", "lecTierSelectOptions", "lecTier",
+    () => updatePreview()
+  );
+
   document.addEventListener("click", (e) => {
     if (!classSelect.contains(e.target)) closeClassSelect();
     if (!manageClassSelect.contains(e.target)) closeManageClassSelect();
+    if (!lecTierDropdown.select.contains(e.target)) lecTierDropdown.close();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeClassSelect(); closeManageClassSelect(); }
+    if (e.key === "Escape") { closeClassSelect(); closeManageClassSelect(); lecTierDropdown.close(); }
   });
 
   // ---- Live preview ----
@@ -809,7 +913,7 @@ if (lectureForm) {
     }
   }
 
-  ["lecSubject", "lecTitle", "lecDescription", "lecTier"].forEach(id => {
+  ["lecSubject", "lecTitle", "lecDescription"].forEach(id => {
     document.getElementById(id).addEventListener("input", updatePreview);
   });
 
@@ -829,7 +933,7 @@ if (lectureForm) {
     document.getElementById("lecTitle").value = lecture.title || "";
     document.getElementById("lecDescription").value = lecture.description || "";
     document.getElementById("lecOrder").value = lecture.order || 0;
-    document.getElementById("lecTier").value = lecture.tier || "premium";
+    lecTierDropdown.setValue(lecture.tier || "premium");
     youtubeInput.value = lecture.videoId || "";
     videoIdHint.textContent = `Detected video ID: ${lecture.videoId}`;
 
@@ -844,7 +948,7 @@ if (lectureForm) {
     editIdInput.value = "";
     lectureForm.reset();
     resetClassSelect();
-    document.getElementById("lecTier").value = "premium";
+    lecTierDropdown.setValue("premium");
     document.getElementById("lecOrder").value = 0;
     videoIdHint.textContent = "Paste a full YouTube URL (watch, youtu.be, embed, shorts) or a raw video ID.";
     submitBtn.textContent = "Add Lecture";
@@ -1065,12 +1169,66 @@ if (resourceForm) {
     });
   });
 
+  // ---- Generic simple dropdown wiring (Access Tier, File Type) ----
+  function wireSimpleDropdown(selectId, triggerId, labelId, optionsId, hiddenInputId, onChange) {
+    const select = document.getElementById(selectId);
+    const trigger = document.getElementById(triggerId);
+    const label = document.getElementById(labelId);
+    const options = document.getElementById(optionsId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+
+    function close() {
+      select.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function open() {
+      select.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+    trigger.addEventListener("click", () => {
+      select.classList.contains("open") ? close() : open();
+    });
+    options.querySelectorAll("li").forEach(option => {
+      option.addEventListener("click", () => {
+        hiddenInput.value = option.dataset.value;
+        label.textContent = option.textContent;
+        options.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+        option.classList.add("active");
+        close();
+        if (onChange) onChange();
+      });
+    });
+    function setValue(value) {
+      hiddenInput.value = value;
+      const match = [...options.querySelectorAll("li")].find(li => li.dataset.value === value);
+      options.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+      if (match) {
+        label.textContent = match.textContent;
+        match.classList.add("active");
+      }
+    }
+    return { select, close, setValue };
+  }
+
+  const resTierDropdown = wireSimpleDropdown(
+    "resTierSelect", "resTierSelectTrigger", "resTierSelectLabel", "resTierSelectOptions", "resTier",
+    () => updateResPreview()
+  );
+  const resFileTypeDropdown = wireSimpleDropdown(
+    "resFileTypeSelect", "resFileTypeSelectTrigger", "resFileTypeSelectLabel", "resFileTypeSelectOptions", "resFileType"
+  );
+
   document.addEventListener("click", (e) => {
     if (!resClassSelect.contains(e.target)) closeResClassSelect();
     if (!manageResClassSelect.contains(e.target)) closeManageResClassSelect();
+    if (!resTierDropdown.select.contains(e.target)) resTierDropdown.close();
+    if (!resFileTypeDropdown.select.contains(e.target)) resFileTypeDropdown.close();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeResClassSelect(); closeManageResClassSelect(); }
+    if (e.key === "Escape") {
+      closeResClassSelect(); closeManageResClassSelect();
+      resTierDropdown.close(); resFileTypeDropdown.close();
+    }
   });
 
   // ---- Live preview ----
@@ -1092,7 +1250,7 @@ if (resourceForm) {
     resPreviewDesc.textContent = description || "The description will appear here.";
   }
 
-  ["resSubject", "resTitle", "resDescription", "resTier"].forEach(id => {
+  ["resSubject", "resTitle", "resDescription"].forEach(id => {
     document.getElementById(id).addEventListener("input", updateResPreview);
   });
 
@@ -1104,8 +1262,8 @@ if (resourceForm) {
     document.getElementById("resTitle").value = resource.title || "";
     document.getElementById("resDescription").value = resource.description || "";
     document.getElementById("resOrder").value = resource.order || 0;
-    document.getElementById("resTier").value = resource.tier || "premium";
-    document.getElementById("resFileType").value = resource.fileType || "pdf";
+    resTierDropdown.setValue(resource.tier || "premium");
+    resFileTypeDropdown.setValue(resource.fileType || "pdf");
     driveLinkInput.value = resource.driveLink || "";
 
     resSubmitBtn.textContent = "Update Resource";
@@ -1119,9 +1277,9 @@ if (resourceForm) {
     resEditIdInput.value = "";
     resourceForm.reset();
     resetResClassSelect();
-    document.getElementById("resTier").value = "premium";
+    resTierDropdown.setValue("premium");
     document.getElementById("resOrder").value = 0;
-    document.getElementById("resFileType").value = "pdf";
+    resFileTypeDropdown.setValue("pdf");
     resSubmitBtn.textContent = "Add Resource";
     resCancelEditBtn.style.display = "none";
     updateResPreview();
