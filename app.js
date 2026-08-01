@@ -623,20 +623,24 @@ app.post('/logout-all', isLoggedIn, async (req, res) => {
 });
 
 // To upload pics to the db from personal pc storage
-const storage = multer.diskStorage({
+// To upload profile pics — stored on Cloudinary (not local disk, which Render
+// wipes on every restart/redeploy), so uploads actually survive.
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-    destination: (req, file, cb) => {
-        cb(null, "./public/uploads");
-    },
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-    filename: (req, file, cb) => {
-
-        const uniqueName =
-            Date.now() + "-" + file.originalname;
-
-        cb(null, uniqueName);
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "shri-balaji-profiles",
+        allowed_formats: ["jpg", "jpeg", "png"],
+        transformation: [{ width: 500, height: 500, crop: "limit" }]
     }
-
 });
 
 const upload = multer({
@@ -677,7 +681,7 @@ app.post(
             });
         }
 
-        const imagePath = "/uploads/" + req.file.filename;
+        const imagePath = req.file.path; // Cloudinary's hosted URL, not a local path
 
         await UserModel.findByIdAndUpdate(
             req.user._id,
