@@ -111,7 +111,7 @@ app.get('/dashboard', isLoggedIn, (req, res) => {
         isGoogleUser: !!req.user.googleid,
         contactEmail: process.env.CONTACT_EMAIL,
         contactPhone: process.env.CONTACT_PHONE,
-        country: "India, Delhi"
+        country: "Delhi,India"
     });
 })
 
