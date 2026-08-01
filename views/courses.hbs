@@ -35,6 +35,14 @@
 }
 .back-btn:hover { opacity: 1; }
 
+/* Section heading — separates "Lectures" from "Study Material" on the class page */
+.courses-section { margin-bottom: 34px; }
+.courses-section:last-child { margin-bottom: 0; }
+.courses-section-title {
+  font-size: 17px; font-weight: 800; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
 .lecture-subject-group { margin-bottom: 28px; }
 .lecture-subject-title {
   font-size: 15px; font-weight: 700; margin-bottom: 10px;
@@ -55,6 +63,29 @@ body.dark .lecture-row { background: rgba(255,255,255,.05); }
   background: #1e293b; color: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: .2s;
 }
 .lecture-play-btn:hover { opacity: .88; transform: translateY(-1px); }
+
+/* Resource row — same shape as lecture-row, but the action is a plain outbound link, not a JS play button */
+.resource-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 16px; border-radius: 12px; background: rgba(0,0,0,.03); margin-bottom: 8px;
+}
+body.dark .resource-row { background: rgba(255,255,255,.05); }
+.resource-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.resource-icon {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(124,58,237,.12); color: #7c3aed;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+body.dark .resource-icon { background: rgba(139,92,246,.18); color: #a78bfa; }
+.resource-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.resource-title { font-size: 14px; font-weight: 600; }
+.resource-desc { font-size: 12px; opacity: .6; }
+.resource-open-btn {
+  flex-shrink: 0; border: none; border-radius: 8px; padding: 8px 16px;
+  background: #1e293b; color: white; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: .2s; display: inline-block;
+}
+.resource-open-btn:hover { opacity: .88; transform: translateY(-1px); }
 
 .lecture-empty { text-align: center; padding: 60px 20px; opacity: .6; }
 .lecture-empty .icon { font-size: 40px; margin-bottom: 12px; }
@@ -127,7 +158,7 @@ body.dark .lecture-row { background: rgba(255,255,255,.05); }
   <div class="container">
     <div class="courses-intro">
       <h3>📚 My Courses</h3>
-      <p>Pick a class to see its lecture videos.</p>
+      <p>Pick a class to see its lecture videos and study material.</p>
       <div class="class-grid">
         <button class="class-card" style="background:linear-gradient(135deg,#be185d,#ec4899);" onclick="openClass(1)">
           <div class="class-num">1</div><div class="class-label">Class 1</div>
@@ -170,13 +201,21 @@ body.dark .lecture-row { background: rgba(255,255,255,.05); }
   </div>
 </div>
 
-<!-- ================= Class lecture list ================= -->
+<!-- ================= Class lecture + resource list ================= -->
 <div id="classCoursesPage" class="page">
   <div class="container">
     <button class="back-btn" onclick="navigate('classGridPage')">← Back to Classes</button>
     <h2 id="classCoursesTitle">Class 9 – Lectures</h2>
 
-    <div id="lectureListWrap" style="margin-top:20px;"></div>
+    <div class="courses-section">
+      <div class="courses-section-title">🎬 Lectures</div>
+      <div id="lectureListWrap"></div>
+    </div>
+
+    <div class="courses-section">
+      <div class="courses-section-title">📄 Study Material</div>
+      <div id="resourceListWrap"></div>
+    </div>
 
     <!-- The mini player docks itself here when expanded; it moves to a fixed corner when minimized -->
     <div id="playerAnchor"></div>
@@ -212,9 +251,9 @@ let currentClass = null;
 
 async function openClass(classNum) {
   currentClass = classNum;
-  document.getElementById("classCoursesTitle").textContent = `Class ${classNum} – Lectures`;
+  document.getElementById("classCoursesTitle").textContent = `Class ${classNum} – Lectures & Study Material`;
   navigate("classCoursesPage");
-  await loadLectures(classNum);
+  await Promise.all([loadLectures(classNum), loadResources(classNum)]);
 }
 
 async function loadLectures(classNum) {
@@ -268,6 +307,67 @@ async function loadLectures(classNum) {
   } catch (err) {
     console.log(err);
     wrap.innerHTML = `<div class="lecture-empty"><div class="icon">⚠️</div><p>Something went wrong loading lectures.</p></div>`;
+  }
+}
+
+// File-type icon shown in the little badge next to each resource row
+function resourceIcon(fileType) {
+  if (fileType === "pdf") return "📕";
+  if (fileType === "doc") return "📝";
+  return "📎";
+}
+
+async function loadResources(classNum) {
+  const wrap = document.getElementById("resourceListWrap");
+  wrap.innerHTML = `<p style="opacity:.6; font-size:14px;">Loading study material…</p>`;
+
+  try {
+    const response = await fetch(`/api/resources/${classNum}`);
+    const data = await response.json();
+
+    if (!data.success) {
+      wrap.innerHTML = `<div class="lecture-empty"><div class="icon">⚠️</div><p>${data.message || "Could not load study material."}</p></div>`;
+      return;
+    }
+
+    const subjects = Object.keys(data.resources);
+
+    if (subjects.length === 0) {
+      wrap.innerHTML = `<div class="lecture-empty"><div class="icon">🗂️</div><p>No study material available for this class yet.</p></div>`;
+      return;
+    }
+
+    wrap.innerHTML = "";
+    subjects.forEach(subject => {
+      const group = document.createElement("div");
+      group.className = "lecture-subject-group";
+
+      const title = document.createElement("div");
+      title.className = "lecture-subject-title";
+      title.textContent = subject;
+      group.appendChild(title);
+
+      data.resources[subject].forEach(resource => {
+        const row = document.createElement("div");
+        row.className = "resource-row";
+        row.innerHTML = `
+          <div class="resource-info">
+            <div class="resource-icon">${resourceIcon(resource.fileType)}</div>
+            <div class="resource-text">
+              <div class="resource-title">${resource.title}</div>
+              ${resource.description ? `<div class="resource-desc">${resource.description}</div>` : ""}
+            </div>
+          </div>
+          <a class="resource-open-btn" href="${resource.driveLink}" target="_blank" rel="noopener noreferrer">Open →</a>
+        `;
+        group.appendChild(row);
+      });
+
+      wrap.appendChild(group);
+    });
+  } catch (err) {
+    console.log(err);
+    wrap.innerHTML = `<div class="lecture-empty"><div class="icon">⚠️</div><p>Something went wrong loading study material.</p></div>`;
   }
 }
 
